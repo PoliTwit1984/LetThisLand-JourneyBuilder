@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rapsodo Email Design Guide</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], barlow: ['Barlow', 'sans-serif'] },
+          colors: { rapsodo: '#ce2029' }
+        }
+      }
+    }
+  </script>
+  <style>
+    html { font-family: 'Inter', system-ui, sans-serif; }
+    body { background: #0f172a; }
+    .toc-link { transition: color 0.15s, border-color 0.15s; }
+    .toc-link.active { color: #f8fafc; border-left-color: #ce2029; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    .stat-card { transition: transform 0.15s, box-shadow 0.15s; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(206,32,41,0.12); }
+    .pattern-card { transition: box-shadow 0.2s, border-color 0.2s; }
+    .pattern-card:hover { box-shadow: 0 0 24px rgba(206,32,41,0.1); border-color: #334155; }
+    .antipattern-card { transition: box-shadow 0.2s; }
+    .antipattern-card:hover { box-shadow: 0 0 20px rgba(239,68,68,0.08); }
+    .good-example { border-left: 3px solid #22c55e; }
+    .bad-example { border-left: 3px solid #ef4444; }
+    code { font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="text-slate-300 antialiased">
+
+<!-- Sidebar -->
+<nav id="sidebar" class="fixed top-0 left-0 w-56 h-screen bg-slate-950/80 backdrop-blur border-r border-slate-800 z-40 overflow-y-auto py-8 px-4 hidden lg:block">
+  <div class="mb-8">
+    <div class="flex items-center gap-2 mb-1">
+      <div class="w-7 h-7 rounded-lg bg-rapsodo flex items-center justify-center">
+        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+      </div>
+      <span class="text-sm font-bold text-white tracking-tight">Email Guide</span>
+    </div>
+    <p class="text-[11px] text-slate-500">Rapsodo Journey Builder</p>
+  </div>
+  <ul class="space-y-1 text-[13px]">
+    <li><a href="#overview" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Overview Stats</a></li>
+    <li><a href="#layout" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Layout &amp; Structure</a></li>
+    <li><a href="#typography" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Typography</a></li>
+    <li><a href="#cta" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">CTA Button Design</a></li>
+    <li><a href="#subjects" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Subject Line Rules</a></li>
+    <li><a href="#preheader" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Preheader Practices</a></li>
+    <li><a href="#darkmode" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Dark Mode</a></li>
+    <li><a href="#mobile" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Mobile Optimization</a></li>
+    <li><a href="#antipatterns" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Anti-Patterns</a></li>
+    <li><a href="#iterable" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Iterable Implementation</a></li>
+    <li><a href="#benchmarks" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Performance Benchmarks</a></li>
+  </ul>
+</nav>
+
+<!-- Main -->
+<main class="lg:ml-56">
+  <div class="max-w-4xl mx-auto px-6 py-12">
+
+    <!-- Header -->
+    <header class="mb-16">
+      <p class="text-xs font-semibold tracking-widest text-rapsodo uppercase mb-3">Design Reference</p>
+      <h1 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight mb-4">Email<br/>Design Guide</h1>
+      <p class="text-lg text-slate-400 max-w-2xl">Layout rules, typography, CTA patterns, dark mode resilience, and Iterable implementation notes for Rapsodo lifecycle journey emails.</p>
+    </header>
+
+    <!-- ============ SECTION 1: OVERVIEW STATS ============ -->
+    <section id="overview" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">1</span>
+        Overview Stats
+      </h2>
+      <p class="text-slate-400 mb-8 max-w-2xl">Key benchmarks for lifecycle email. These numbers define what good looks like and where the risks are.</p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        <div class="stat-card rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Ideal Email Length</p>
+          <p class="text-3xl font-extrabold text-white mb-1">75&ndash;125</p>
+          <p class="text-sm text-slate-400">Words per lifecycle email</p>
+        </div>
+        <div class="stat-card rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Dark Mode Users</p>
+          <p class="text-3xl font-extrabold text-white mb-1">40%</p>
+          <p class="text-sm text-slate-400">Opens in dark mode environments</p>
+        </div>
+        <div class="stat-card rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Mobile Opens</p>
+          <p class="text-3xl font-extrabold text-white mb-1">60&ndash;70%</p>
+          <p class="text-sm text-slate-400">Opened on mobile devices</p>
+        </div>
+        <div class="stat-card rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Target Open Rate</p>
+          <p class="text-3xl font-extrabold text-rapsodo mb-1">35%</p>
+          <p class="text-sm text-slate-400">Lifecycle email benchmark</p>
+        </div>
+        <div class="stat-card rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Target CTR</p>
+          <p class="text-3xl font-extrabold text-white mb-1">6%</p>
+          <p class="text-sm text-slate-400">Lifecycle email benchmark</p>
+        </div>
+        <div class="stat-card rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Email ROI</p>
+          <p class="text-3xl font-extrabold text-white mb-1">$36</p>
+          <p class="text-sm text-slate-400">Return per $1 spent on email</p>
+        </div>
+      </div>
+
+      <div class="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+        <p class="text-sm text-slate-400"><span class="text-white font-semibold">Key insight:</span> Email remains the highest-ROI lifecycle channel at $36 per dollar spent, but only when it earns attention. 80% of users delete emails that render poorly on mobile. Every design decision in this guide optimizes for mobile-first, dark-mode-resilient, scannable emails that drive a single action.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 2: LAYOUT & STRUCTURE ============ -->
+    <section id="layout" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">2</span>
+        Layout &amp; Structure
+      </h2>
+      <p class="text-slate-400 mb-8 max-w-2xl">Single-column, table-based layout. Built for every email client from Apple Mail to Outlook 2016.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-rapsodo uppercase tracking-wider mb-3">Structure Rules</p>
+          <ul class="space-y-2 text-sm text-slate-300">
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Single-column layout, 600px max-width</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Table-based construction (not div-based)</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Off-white (#F8F9FA) body background, not pure white</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Fluid tables with max-width for mobile</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Card-based sections for feature highlights</li>
+          </ul>
+        </div>
+        <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-rapsodo uppercase tracking-wider mb-3">Zero-Scroll Target</p>
+          <p class="text-sm text-slate-300 mb-3">The entire message + CTA must be visible without scrolling on mobile. This means:</p>
+          <ul class="space-y-2 text-sm text-slate-300">
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Headline + 2&ndash;3 sentences + CTA button</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> No hero images above the fold unless they carry data</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Total content height under ~500px on mobile</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Base Table Structure</p>
+        <pre class="text-sm text-slate-300 font-mono leading-relaxed overflow-x-auto"><code>&lt;table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+       style="background-color: #F8F9FA;"&gt;
+  &lt;tr&gt;
+    &lt;td align="center" style="padding: 24px 16px;"&gt;
+      &lt;table role="presentation" width="600" cellpadding="0" cellspacing="0"
+             style="max-width: 600px; width: 100%;
+                    background-color: #ffffff; border-radius: 8px;"&gt;
+        &lt;!-- Header row --&gt;
+        &lt;tr&gt;&lt;td style="padding: 32px 32px 0;"&gt;
+          &lt;!-- Logo + context label --&gt;
+        &lt;/td&gt;&lt;/tr&gt;
+        &lt;!-- Body row --&gt;
+        &lt;tr&gt;&lt;td style="padding: 24px 32px;"&gt;
+          &lt;!-- Headline + copy + CTA --&gt;
+        &lt;/td&gt;&lt;/tr&gt;
+        &lt;!-- Footer row --&gt;
+        &lt;tr&gt;&lt;td style="padding: 24px 32px; border-top: 1px solid #e5e7eb;"&gt;
+          &lt;!-- Unsubscribe + address --&gt;
+        &lt;/td&gt;&lt;/tr&gt;
+      &lt;/table&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;</code></pre>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 3: TYPOGRAPHY ============ -->
+    <section id="typography" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">3</span>
+        Typography
+      </h2>
+      <p class="text-slate-400 mb-8 max-w-2xl">Web fonts are unreliable in email. Use system font stacks exclusively, and design for fallback rendering.</p>
+
+      <!-- Font stack callout -->
+      <div class="rounded-xl border border-rapsodo/20 bg-rapsodo/5 p-5 mb-6">
+        <p class="text-sm text-slate-300"><span class="text-rapsodo font-semibold">Font stack:</span> <code class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded">Helvetica, 'Helvetica Neue', Arial, sans-serif</code> &mdash; NO web fonts. Google Fonts, custom @font-face, and Typekit all fail silently in most email clients. System fonts render consistently everywhere.</p>
+      </div>
+
+      <!-- Typography table -->
+      <div class="rounded-xl border border-slate-800 bg-slate-900/60 overflow-hidden mb-6">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-700 text-left">
+              <th class="px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Element</th>
+              <th class="px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Size</th>
+              <th class="px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Weight</th>
+              <th class="px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Color</th>
+              <th class="px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Preview</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800">
+            <tr>
+              <td class="px-5 py-3 text-white font-medium">Headline</td>
+              <td class="px-5 py-3">28px</td>
+              <td class="px-5 py-3">800</td>
+              <td class="px-5 py-3"><span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm" style="background:#1a1a1a; border:1px solid #475569"></span>#1a1a1a</span></td>
+              <td class="px-5 py-3"><span style="font-size:18px; font-weight:800; color:#f8fafc;">Session Ready</span></td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-white font-medium">Body</td>
+              <td class="px-5 py-3">16px</td>
+              <td class="px-5 py-3">400</td>
+              <td class="px-5 py-3"><span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm" style="background:#333333; border:1px solid #475569"></span>#333333</span></td>
+              <td class="px-5 py-3"><span style="font-size:14px; font-weight:400; color:#94a3b8;">Your launch data is in.</span></td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-white font-medium">Context label</td>
+              <td class="px-5 py-3">11px</td>
+              <td class="px-5 py-3">Bold</td>
+              <td class="px-5 py-3"><span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm" style="background:#71717a; border:1px solid #475569"></span>#71717a</span></td>
+              <td class="px-5 py-3"><span style="font-size:11px; font-weight:700; color:#71717a; text-transform:uppercase; letter-spacing:0.05em;">SESSION REVIEW</span></td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-white font-medium">CTA button</td>
+              <td class="px-5 py-3">16px</td>
+              <td class="px-5 py-3">Bold</td>
+              <td class="px-5 py-3"><span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm" style="background:#ffffff; border:1px solid #475569"></span>#ffffff</span></td>
+              <td class="px-5 py-3"><span class="inline-block px-4 py-1.5 rounded-md text-white text-xs font-bold" style="background:#ce2029;">View Stats</span></td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-white font-medium">Caption</td>
+              <td class="px-5 py-3">14px</td>
+              <td class="px-5 py-3">400</td>
+              <td class="px-5 py-3"><span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm" style="background:#71717a; border:1px solid #475569"></span>#71717a</span></td>
+              <td class="px-5 py-3"><span style="font-size:12px; font-weight:400; color:#71717a;">Based on 47 shots</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Alignment Rules</p>
+          <ul class="space-y-2 text-sm text-slate-300">
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Body text: left-aligned always</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Headlines: center-aligned only</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> CTA buttons: center-aligned only</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Context labels: left-aligned, above headline</li>
+          </ul>
+        </div>
+        <div class="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Line Height</p>
+          <p class="text-sm text-slate-300 mb-2">Body text uses 1.6x line-height (26px on 16px font). This creates comfortable reading density on mobile without wasting vertical space.</p>
+          <p class="text-sm text-slate-400">Headlines use 1.2x line-height for tighter visual grouping.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 4: CTA BUTTON DESIGN ============ -->
+    <section id="cta" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">4</span>
+        CTA Button Design
+      </h2>
+      <p class="text-slate-400 mb-8 max-w-2xl">One primary CTA per email. Personalized CTAs convert 202% better than generic ones. Bulletproof HTML buttons render even when images are blocked.</p>
+
+      <!-- Button specs -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-rapsodo uppercase tracking-wider mb-3">Button Specs</p>
+          <ul class="space-y-2 text-sm text-slate-300">
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> 6px border-radius (rounded rectangle)</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> 48px height, 280px min-width on desktop</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> 100% width on mobile (via media query)</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Background: #ce2029 (Rapsodo red)</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Text: #ffffff, 16px, bold</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> 6px radius = 17&ndash;55% higher CTR than sharp corners</li>
+          </ul>
+        </div>
+        <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-rapsodo uppercase tracking-wider mb-3">CTA Rules</p>
+          <ul class="space-y-2 text-sm text-slate-300">
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> ONE primary CTA per email (never two buttons)</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Text link for secondary actions only</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Personalized CTAs: 202% better conversion</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Use action verbs that describe the destination</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Never use "Click Here", "Learn More", or "Submit"</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Good vs Bad CTA -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div class="rounded-xl border border-green-900/50 bg-green-950/20 p-5">
+          <p class="text-xs font-semibold text-green-500 uppercase tracking-wider mb-4">Good CTAs</p>
+          <div class="space-y-3">
+            <div class="text-center"><a class="inline-block px-8 py-3 rounded-md text-white text-sm font-bold" style="background:#ce2029; min-width:240px;">View Your Stats</a></div>
+            <div class="text-center"><a class="inline-block px-8 py-3 rounded-md text-white text-sm font-bold" style="background:#ce2029; min-width:240px;">Try Courses Mode</a></div>
+            <div class="text-center"><a class="inline-block px-8 py-3 rounded-md text-white text-sm font-bold" style="background:#ce2029; min-width:240px;">Review Your Session</a></div>
+          </div>
+        </div>
+        <div class="rounded-xl border border-red-900/50 bg-red-950/20 p-5">
+          <p class="text-xs font-semibold text-red-500 uppercase tracking-wider mb-4">Bad CTAs</p>
+          <div class="space-y-3">
+            <div class="text-center"><a class="inline-block px-8 py-3 rounded-md text-white text-sm font-bold bg-slate-600" style="min-width:240px;">Click Here</a></div>
+            <div class="text-center"><a class="inline-block px-8 py-3 rounded-md text-white text-sm font-bold bg-slate-600" style="min-width:240px;">Learn More</a></div>
+            <div class="text-center"><a class="inline-block px-8 py-3 rounded-md text-white text-sm font-bold bg-slate-600" style="min-width:240px;">Submit</a></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bulletproof button code -->
+      <div class="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Bulletproof HTML Button with VML Fallback</p>
+        <pre class="text-sm text-slate-300 font-mono leading-relaxed overflow-x-auto"><code>&lt;!-- Bulletproof button: works in Outlook, Gmail, Apple Mail --&gt;
+&lt;table role="presentation" cellpadding="0" cellspacing="0"
+       style="margin: 24px auto;"&gt;
+  &lt;tr&gt;
+    &lt;td align="center" bgcolor="#ce2029"
+        style="border-radius: 6px;"&gt;
+      &lt;!--[if mso]&gt;
+      &lt;v:roundrect xmlns:v="urn:schemas-microsoft-com:vml"
+        xmlns:w="urn:schemas-microsoft-com:office:word"
+        href="https://rapsodo.com/session"
+        style="height:48px; v-text-anchor:middle; width:280px;"
+        arcsize="13%" strokecolor="#ce2029" fillcolor="#ce2029"&gt;
+        &lt;w:anchorlock/&gt;
+        &lt;center style="color:#ffffff; font-family:Helvetica,Arial,sans-serif;
+          font-size:16px; font-weight:bold;"&gt;
+          View Your Stats
+        &lt;/center&gt;
+      &lt;/v:roundrect&gt;
+      &lt;![endif]--&gt;
+      &lt;!--[if !mso]&gt;&lt;!--&gt;
+      &lt;a href="https://rapsodo.com/session"
+         style="background-color: #ce2029; border-radius: 6px;
+                color: #ffffff; display: inline-block;
+                font-family: Helvetica, Arial, sans-serif;
+                font-size: 16px; font-weight: bold;
+                line-height: 48px; text-align: center;
+                text-decoration: none; width: 280px;
+                -webkit-text-size-adjust: none;"&gt;
+        View Your Stats
+      &lt;/a&gt;
+      &lt;!--&lt;![endif]--&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;</code></pre>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 5: SUBJECT LINE RULES ============ -->
+    <section id="subjects" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">5</span>
+        Subject Line Rules
+      </h2>
+      <p class="text-slate-400 mb-8 max-w-2xl">Max 40 characters (visible on mobile). Sentence case, conversational, like a note from a coach. 2&ndash;4 word subjects achieve 46% open rates.</p>
+
+      <!-- Rules -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-rapsodo uppercase tracking-wider mb-3">Rules</p>
+          <ul class="space-y-2 text-sm text-slate-300">
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Max 40 characters (ideal: 30&ndash;40)</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Sentence case (not Title Case)</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> 2&ndash;4 word subjects: 46% open rate</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Reference user behavior when possible</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> No exclamation marks</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> No ALL CAPS words</li>
+          </ul>
+        </div>
+        <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-rapsodo uppercase tracking-wider mb-3">Tone</p>
+          <p class="text-sm text-slate-300 mb-3">Write like a coach texting after a session &mdash; not a marketing team sending a blast. Conversational, specific, useful.</p>
+          <p class="text-sm text-slate-400">Behavioral references outperform generic feature pitches every time. "Your 10th session deserves a look" beats "Check out these features!" by 2&ndash;3x on open rate.</p>
+        </div>
+      </div>
+
+      <!-- Examples table -->
+      <div class="rounded-xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-700 text-left">
+              <th class="px-5 py-3 text-xs font-semibold text-green-500 uppercase tracking-wider w-1/2">Good</th>
+              <th class="px-5 py-3 text-xs font-semibold text-red-500 uppercase tracking-wider w-1/2">Bad</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800">
+            <tr>
+              <td class="px-5 py-3 text-slate-200">Your session is ready</td>
+              <td class="px-5 py-3 text-slate-400 line-through decoration-red-900/60">Your Rapsodo Session Review Data Is Available Now!</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-slate-200">10 sessions in &mdash; nice</td>
+              <td class="px-5 py-3 text-slate-400 line-through decoration-red-900/60">CONGRATULATIONS! You've Hit a Milestone!</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-slate-200">Try Range mode next</td>
+              <td class="px-5 py-3 text-slate-400 line-through decoration-red-900/60">Check Out Our Amazing Range Mode Feature!</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-slate-200">Your carry dropped 4 yards</td>
+              <td class="px-5 py-3 text-slate-400 line-through decoration-red-900/60">Important Update About Your Performance Data</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-slate-200">Day 3: what to practice</td>
+              <td class="px-5 py-3 text-slate-400 line-through decoration-red-900/60">Learn More About Rapsodo Features Today</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-slate-200">5 days left on your trial</td>
+              <td class="px-5 py-3 text-slate-400 line-through decoration-red-900/60">Don't Miss Out On Your Free Trial Offer!!!</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 6: PREHEADER BEST PRACTICES ============ -->
+    <section id="preheader" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">6</span>
+        Preheader Best Practices
+      </h2>
+      <p class="text-slate-400 mb-8 max-w-2xl">The preheader is the second line of defense after the subject. 50&ndash;70 characters that complement (never repeat) the subject line. Lifts open rates 15.5% and CTR 50%.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-rapsodo uppercase tracking-wider mb-3">Rules</p>
+          <ul class="space-y-2 text-sm text-slate-300">
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> 50&ndash;70 characters</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Complement the subject, never repeat it</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Include specific data when possible</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Lifts open rates 15.5%, CTR 50%</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Hide with zero-width spaces to prevent body text bleed</li>
+          </ul>
+        </div>
+        <div class="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Preheader HTML</p>
+          <pre class="text-xs text-slate-300 font-mono leading-relaxed overflow-x-auto"><code>&lt;!-- Hidden preheader text --&gt;
+&lt;div style="display:none; max-height:0;
+     overflow:hidden; mso-hide:all;"&gt;
+  Your carry distance improved 4 yards
+  since last week.
+  &amp;zwnj;&amp;nbsp;&amp;zwnj;&amp;nbsp;&amp;zwnj;&amp;nbsp;
+  &amp;zwnj;&amp;nbsp;&amp;zwnj;&amp;nbsp;&amp;zwnj;&amp;nbsp;
+&lt;/div&gt;</code></pre>
+        </div>
+      </div>
+
+      <!-- Paired examples -->
+      <div class="rounded-xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+        <p class="px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-800">Subject + Preheader Pairs</p>
+        <div class="divide-y divide-slate-800">
+          <div class="px-5 py-4">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-[10px] font-bold text-rapsodo uppercase tracking-wider bg-rapsodo/10 px-2 py-0.5 rounded">Subject</span>
+              <span class="text-sm text-white font-medium">Your session is ready</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-slate-800 px-2 py-0.5 rounded">Preheader</span>
+              <span class="text-sm text-slate-400">47 shots analyzed &mdash; carry distance up 3.2 yards from last session</span>
+            </div>
+          </div>
+          <div class="px-5 py-4">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-[10px] font-bold text-rapsodo uppercase tracking-wider bg-rapsodo/10 px-2 py-0.5 rounded">Subject</span>
+              <span class="text-sm text-white font-medium">10 sessions in &mdash; nice</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-slate-800 px-2 py-0.5 rounded">Preheader</span>
+              <span class="text-sm text-slate-400">Here&rsquo;s what your data says about your progress so far</span>
+            </div>
+          </div>
+          <div class="px-5 py-4">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-[10px] font-bold text-rapsodo uppercase tracking-wider bg-rapsodo/10 px-2 py-0.5 rounded">Subject</span>
+              <span class="text-sm text-white font-medium">Try Range mode next</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-slate-800 px-2 py-0.5 rounded">Preheader</span>
+              <span class="text-sm text-slate-400">Users who add Range mode convert at 1,177% higher rate</span>
+            </div>
+          </div>
+          <div class="px-5 py-4">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-[10px] font-bold text-rapsodo uppercase tracking-wider bg-rapsodo/10 px-2 py-0.5 rounded">Subject</span>
+              <span class="text-sm text-white font-medium">5 days left on your trial</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-slate-800 px-2 py-0.5 rounded">Preheader</span>
+              <span class="text-sm text-slate-400">You&rsquo;ve logged 23 sessions &mdash; keep your data and unlock Insights</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 7: DARK MODE ============ -->
+    <section id="darkmode" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">7</span>
+        Dark Mode
+      </h2>
+      <p class="text-slate-400 mb-8 max-w-2xl">40%+ of email opens are in dark mode. Design for it from the start, not as an afterthought.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-rapsodo uppercase tracking-wider mb-3">Dark Mode Rules</p>
+          <ul class="space-y-2 text-sm text-slate-300">
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Use #F8F9FA (off-white), never #FFFFFF</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Bold font weights (600+) for body text visibility</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Avoid thin hairline borders (disappear in dark)</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Use transparent PNGs for logos, not JPGs</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Test on Apple Mail dark mode (strictest inversion)</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Add <code class="text-xs bg-slate-800 px-1 rounded">color-scheme: light dark</code> meta tag</li>
+          </ul>
+        </div>
+        <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-rapsodo uppercase tracking-wider mb-3">Client Behavior</p>
+          <ul class="space-y-2 text-sm text-slate-300">
+            <li class="flex items-start gap-2"><span class="text-slate-500 mt-0.5">&#9656;</span> <span class="text-white font-medium">Apple Mail:</span> Full color inversion</li>
+            <li class="flex items-start gap-2"><span class="text-slate-500 mt-0.5">&#9656;</span> <span class="text-white font-medium">Outlook (Win):</span> Partial inversion, ignores CSS</li>
+            <li class="flex items-start gap-2"><span class="text-slate-500 mt-0.5">&#9656;</span> <span class="text-white font-medium">Gmail:</span> No inversion (own dark theme)</li>
+            <li class="flex items-start gap-2"><span class="text-slate-500 mt-0.5">&#9656;</span> <span class="text-white font-medium">Yahoo:</span> Full inversion, respects CSS</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Before/After -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div class="rounded-xl border border-slate-800 bg-white p-6">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-4">Light Mode</p>
+          <div style="background:#F8F9FA; border-radius:8px; padding:24px; font-family:Helvetica,Arial,sans-serif;">
+            <p style="font-size:10px; font-weight:700; color:#71717a; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 8px;">Session Review</p>
+            <p style="font-size:20px; font-weight:800; color:#1a1a1a; margin:0 0 12px; line-height:1.2;">Your session is ready</p>
+            <p style="font-size:13px; color:#333333; line-height:1.6; margin:0 0 16px;">47 shots analyzed. Your carry distance improved 3.2 yards since last session.</p>
+            <div style="text-align:center;"><a style="display:inline-block; background:#ce2029; color:#ffffff; font-size:14px; font-weight:bold; padding:12px 32px; border-radius:6px; text-decoration:none;">View Your Stats</a></div>
+          </div>
+        </div>
+        <div class="rounded-xl border border-slate-800 bg-slate-950 p-6">
+          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-4">Dark Mode (Apple Mail)</p>
+          <div style="background:#1c1c1e; border-radius:8px; padding:24px; font-family:Helvetica,Arial,sans-serif;">
+            <p style="font-size:10px; font-weight:700; color:#a1a1aa; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 8px;">Session Review</p>
+            <p style="font-size:20px; font-weight:800; color:#f5f5f5; margin:0 0 12px; line-height:1.2;">Your session is ready</p>
+            <p style="font-size:13px; color:#d4d4d8; line-height:1.6; margin:0 0 16px;">47 shots analyzed. Your carry distance improved 3.2 yards since last session.</p>
+            <div style="text-align:center;"><a style="display:inline-block; background:#ce2029; color:#ffffff; font-size:14px; font-weight:bold; padding:12px 32px; border-radius:6px; text-decoration:none;">View Your Stats</a></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CSS Code -->
+      <div class="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Dark Mode CSS Override</p>
+        <pre class="text-sm text-slate-300 font-mono leading-relaxed overflow-x-auto"><code>&lt;meta name="color-scheme" content="light dark"&gt;
+&lt;meta name="supported-color-schemes" content="light dark"&gt;
+&lt;style&gt;
+  :root { color-scheme: light dark; }
+
+  @media (prefers-color-scheme: dark) {
+    .email-body { background-color: #1c1c1e !important; }
+    .email-card { background-color: #2c2c2e !important; }
+    .headline   { color: #f5f5f5 !important; }
+    .body-text  { color: #d4d4d8 !important; }
+    .caption    { color: #a1a1aa !important; }
+    /* CTA button keeps #ce2029 — no change needed */
+  }
+&lt;/style&gt;</code></pre>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 8: MOBILE OPTIMIZATION ============ -->
+    <section id="mobile" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">8</span>
+        Mobile Optimization
+      </h2>
+      <p class="text-slate-400 mb-8 max-w-2xl">60&ndash;70% of email opens are mobile. 80% of users delete emails that render poorly on mobile. Design mobile-first, then verify desktop.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-rapsodo uppercase tracking-wider mb-3">Mobile Requirements</p>
+          <ul class="space-y-2 text-sm text-slate-300">
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> 16px minimum body text (no 12px/14px on mobile)</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Full-width CTA buttons on mobile</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> 44x44px minimum touch targets</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> 20px side padding on mobile</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Stack multi-column layouts to single column</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Images: max-width 100%, height auto</li>
+          </ul>
+        </div>
+        <div class="rounded-xl border border-rapsodo/20 bg-rapsodo/5 p-5">
+          <p class="text-xs font-semibold text-rapsodo uppercase tracking-wider mb-3">The 80% Rule</p>
+          <p class="text-sm text-slate-300 mb-3">80% of users who encounter a poorly-rendered mobile email will delete it immediately. There is no second chance.</p>
+          <p class="text-sm text-slate-400">This means mobile rendering is not a nice-to-have &mdash; it is the primary design constraint. If it doesn't look right at 375px wide, it doesn't ship.</p>
+        </div>
+      </div>
+
+      <!-- Mobile media query code -->
+      <div class="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Mobile Media Query</p>
+        <pre class="text-sm text-slate-300 font-mono leading-relaxed overflow-x-auto"><code>@media only screen and (max-width: 600px) {
+  /* Full-width layout */
+  .email-container { width: 100% !important; }
+
+  /* Side padding */
+  .email-content { padding: 24px 20px !important; }
+
+  /* Full-width CTA */
+  .cta-button {
+    width: 100% !important;
+    min-width: 0 !important;
+    display: block !important;
+    padding: 16px 0 !important;
+  }
+
+  /* Responsive images */
+  .email-image {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
+  }
+
+  /* Stack columns */
+  .column { display: block !important; width: 100% !important; }
+
+  /* Prevent font scaling on iOS */
+  * { -webkit-text-size-adjust: 100% !important; }
+}</code></pre>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 9: ANTI-PATTERNS ============ -->
+    <section id="antipatterns" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">9</span>
+        Anti-Patterns
+      </h2>
+      <p class="text-slate-400 mb-8 max-w-2xl">Common mistakes that destroy open rates, CTR, and deliverability. If you see any of these in a draft, fix them before sending.</p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="antipattern-card rounded-xl border border-red-900/30 bg-red-950/10 p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            <p class="text-sm font-bold text-red-400">Wall of Text</p>
+          </div>
+          <p class="text-sm text-slate-400">More than 125 words kills engagement. If you need more content, link to a landing page. The email is a door, not the room.</p>
+        </div>
+
+        <div class="antipattern-card rounded-xl border border-red-900/30 bg-red-950/10 p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            <p class="text-sm font-bold text-red-400">Multiple CTA Buttons</p>
+          </div>
+          <p class="text-sm text-slate-400">Two or more buttons create decision paralysis. One primary CTA per email. Secondary actions get text links only.</p>
+        </div>
+
+        <div class="antipattern-card rounded-xl border border-red-900/30 bg-red-950/10 p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            <p class="text-sm font-bold text-red-400">Stock Photography</p>
+          </div>
+          <p class="text-sm text-slate-400">Generic stock images signal generic content. Use product screenshots, data visualizations, or no images at all. Every pixel must earn its space.</p>
+        </div>
+
+        <div class="antipattern-card rounded-xl border border-red-900/30 bg-red-950/10 p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            <p class="text-sm font-bold text-red-400">Generic "Learn More" CTAs</p>
+          </div>
+          <p class="text-sm text-slate-400">"Learn More" tells the user nothing about what happens when they click. Use action verbs that describe the destination: "View Your Stats", "Try Courses Mode".</p>
+        </div>
+
+        <div class="antipattern-card rounded-xl border border-red-900/30 bg-red-950/10 p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            <p class="text-sm font-bold text-red-400">Identical Visual Structure</p>
+          </div>
+          <p class="text-sm text-slate-400">If every email looks the same, users stop looking. Vary the layout between plain-text-style, card-based, and data-highlight formats across the journey.</p>
+        </div>
+
+        <div class="antipattern-card rounded-xl border border-red-900/30 bg-red-950/10 p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            <p class="text-sm font-bold text-red-400">"Click Here" Link Text</p>
+          </div>
+          <p class="text-sm text-slate-400">Meaningless without context and terrible for accessibility. Screen readers read link text in isolation &mdash; "Click Here" says nothing. Use descriptive link text.</p>
+        </div>
+
+        <div class="antipattern-card rounded-xl border border-red-900/30 bg-red-950/10 p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            <p class="text-sm font-bold text-red-400">Pure White Background</p>
+          </div>
+          <p class="text-sm text-slate-400">Pure white (#FFFFFF) gets inverted to pure black in dark mode, creating harsh contrast. Use #F8F9FA (off-white) for the email body background.</p>
+        </div>
+
+        <div class="antipattern-card rounded-xl border border-red-900/30 bg-red-950/10 p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            <p class="text-sm font-bold text-red-400">Time-Based Cadence Only</p>
+          </div>
+          <p class="text-sm text-slate-400">Sending "Day 3, Day 7, Day 14" emails regardless of user behavior is spray-and-pray. Behavioral triggers (session completed, feature used, milestone hit) outperform time-based cadence by 6&ndash;8x.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 10: ITERABLE IMPLEMENTATION ============ -->
+    <section id="iterable" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">10</span>
+        Iterable Implementation
+      </h2>
+      <p class="text-slate-400 mb-8 max-w-2xl">Iterable-specific patterns for building and maintaining lifecycle email templates. Use Side by Side editor, full HTML templates, and Handlebars for personalization.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-rapsodo uppercase tracking-wider mb-3">Editor &amp; Template Rules</p>
+          <ul class="space-y-2 text-sm text-slate-300">
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Use <span class="text-white font-medium">Side by Side</span> editor (not Drag &amp; Drop)</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Templates must be full HTML (not partials)</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Use Snippets for reusable components</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Header snippet, footer snippet, CTA snippet</li>
+            <li class="flex items-start gap-2"><span class="text-rapsodo mt-0.5">&#9656;</span> Name templates: <code class="text-xs bg-slate-800 px-1 rounded">journey_phase_variant</code></li>
+          </ul>
+        </div>
+        <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-rapsodo uppercase tracking-wider mb-3">Common Merge Tags</p>
+          <ul class="space-y-2 text-sm text-slate-300">
+            <li class="flex items-start gap-2"><code class="text-xs text-rapsodo font-mono bg-slate-800 px-1.5 py-0.5 rounded">{{firstName}}</code> <span class="text-slate-400">User first name</span></li>
+            <li class="flex items-start gap-2"><code class="text-xs text-rapsodo font-mono bg-slate-800 px-1.5 py-0.5 rounded">{{mlm2numSessions}}</code> <span class="text-slate-400">Total sessions</span></li>
+            <li class="flex items-start gap-2"><code class="text-xs text-rapsodo font-mono bg-slate-800 px-1.5 py-0.5 rounded">{{total_shots}}</code> <span class="text-slate-400">Total shots taken</span></li>
+            <li class="flex items-start gap-2"><code class="text-xs text-rapsodo font-mono bg-slate-800 px-1.5 py-0.5 rounded">{{trialDaysRemaining}}</code> <span class="text-slate-400">Trial countdown</span></li>
+            <li class="flex items-start gap-2"><code class="text-xs text-rapsodo font-mono bg-slate-800 px-1.5 py-0.5 rounded">{{lastSessionDate}}</code> <span class="text-slate-400">Last session date</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Conditional content example -->
+      <div class="rounded-xl border border-slate-800 bg-slate-900/40 p-5 mb-4">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Conditional Content with Handlebars</p>
+        <pre class="text-sm text-slate-300 font-mono leading-relaxed overflow-x-auto"><code>&lt;!-- Show different content based on session count --&gt;
+{{#if mlm2numSessions}}
+  {{#eq mlm2numSessions 0}}
+    &lt;p&gt;Start your first session to unlock your stats.&lt;/p&gt;
+  {{/eq}}
+  {{#gt mlm2numSessions 0}}
+    {{#lt mlm2numSessions 5}}
+      &lt;p&gt;You&rsquo;ve completed {{mlm2numSessions}} sessions.
+         Try adding Range mode next.&lt;/p&gt;
+    {{/lt}}
+    {{#gte mlm2numSessions 5}}
+      &lt;p&gt;{{mlm2numSessions}} sessions in &mdash; check your
+         Insights tab for trend analysis.&lt;/p&gt;
+    {{/gte}}
+  {{/gt}}
+{{else}}
+  &lt;p&gt;Your practice data is waiting for you.&lt;/p&gt;
+{{/if}}
+
+&lt;!-- Feature-specific CTA --&gt;
+{{#if hasUsedRange}}
+  &lt;a href="https://rapsodo.com/insights"&gt;View Your Insights&lt;/a&gt;
+{{else}}
+  &lt;a href="https://rapsodo.com/range"&gt;Try Range Mode&lt;/a&gt;
+{{/if}}</code></pre>
+      </div>
+
+      <!-- Snippets note -->
+      <div class="rounded-xl border border-slate-800 bg-slate-900/40 p-5 mb-4">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Snippet Usage</p>
+        <pre class="text-sm text-slate-300 font-mono leading-relaxed overflow-x-auto"><code>&lt;!-- Insert reusable header snippet --&gt;
+{{snippet "rapsodo_email_header"}}
+
+&lt;!-- Main content goes here --&gt;
+&lt;h1&gt;Your session is ready&lt;/h1&gt;
+&lt;p&gt;{{total_shots}} shots analyzed...&lt;/p&gt;
+
+&lt;!-- Insert reusable CTA snippet --&gt;
+{{snippet "rapsodo_cta_primary" ctaText="View Your Stats"
+         ctaUrl="https://rapsodo.com/session"}}
+
+&lt;!-- Insert reusable footer snippet --&gt;
+{{snippet "rapsodo_email_footer"}}</code></pre>
+      </div>
+
+      <!-- Fallback values -->
+      <div class="rounded-xl border border-rapsodo/20 bg-rapsodo/5 p-5">
+        <p class="text-sm text-slate-300"><span class="text-rapsodo font-semibold">Always set fallback values:</span> Use <code class="text-xs text-slate-300 font-mono bg-slate-800 px-1.5 py-0.5 rounded">{{default firstName "there"}}</code> to prevent blank fields when data is missing. Every merge tag should have a graceful fallback. An email that says "Hi , your session..." is worse than no email at all.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 11: PERFORMANCE BENCHMARKS ============ -->
+    <section id="benchmarks" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">11</span>
+        Performance Benchmarks
+      </h2>
+      <p class="text-slate-400 mb-8 max-w-2xl">Target open rates and CTR by email type. Use these to evaluate campaign performance and identify underperformers.</p>
+
+      <div class="rounded-xl border border-slate-800 bg-slate-900/60 overflow-hidden mb-6">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-700 text-left">
+              <th class="px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Email Type</th>
+              <th class="px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Open Rate</th>
+              <th class="px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">CTR</th>
+              <th class="px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Notes</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800">
+            <tr>
+              <td class="px-5 py-3 text-white font-medium">Welcome</td>
+              <td class="px-5 py-3"><span class="text-green-400 font-semibold">50&ndash;70%</span></td>
+              <td class="px-5 py-3"><span class="text-green-400 font-semibold">20&ndash;40%</span></td>
+              <td class="px-5 py-3 text-slate-400 hidden sm:table-cell">Highest engagement of any lifecycle email</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-white font-medium">Onboarding (Day 1&ndash;7)</td>
+              <td class="px-5 py-3"><span class="text-green-400 font-semibold">40&ndash;60%</span></td>
+              <td class="px-5 py-3"><span class="text-green-400 font-semibold">10&ndash;20%</span></td>
+              <td class="px-5 py-3 text-slate-400 hidden sm:table-cell">Drops sharply after day 3 without behavioral hooks</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-white font-medium">Feature adoption</td>
+              <td class="px-5 py-3"><span class="text-yellow-400 font-semibold">25&ndash;40%</span></td>
+              <td class="px-5 py-3"><span class="text-yellow-400 font-semibold">5&ndash;12%</span></td>
+              <td class="px-5 py-3 text-slate-400 hidden sm:table-cell">Behavioral triggers outperform time-based 3&ndash;5x</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-white font-medium">Trial midpoint</td>
+              <td class="px-5 py-3"><span class="text-yellow-400 font-semibold">30&ndash;45%</span></td>
+              <td class="px-5 py-3"><span class="text-yellow-400 font-semibold">8&ndash;15%</span></td>
+              <td class="px-5 py-3 text-slate-400 hidden sm:table-cell">Data-hook subject lines lift open rate 20%+</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-white font-medium">Trial expiration</td>
+              <td class="px-5 py-3"><span class="text-green-400 font-semibold">40&ndash;60%</span></td>
+              <td class="px-5 py-3"><span class="text-green-400 font-semibold">10&ndash;20%</span></td>
+              <td class="px-5 py-3 text-slate-400 hidden sm:table-cell">Urgency + loss aversion = highest conversion intent</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-white font-medium">Re-engagement</td>
+              <td class="px-5 py-3"><span class="text-red-400 font-semibold">15&ndash;25%</span></td>
+              <td class="px-5 py-3"><span class="text-red-400 font-semibold">3&ndash;8%</span></td>
+              <td class="px-5 py-3 text-slate-400 hidden sm:table-cell">Diminishing returns after 2nd re-engagement attempt</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+        <p class="text-sm text-slate-400"><span class="text-white font-semibold">Reading this table:</span> Green ranges are strong baselines that well-designed lifecycle emails should consistently hit. Yellow ranges indicate campaigns where copy quality and behavioral targeting create the biggest variance. Red ranges are inherently lower because re-engagement targets disengaged users &mdash; but they still deliver positive ROI if the content is relevant to what originally engaged the user.</p>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 pt-8 pb-12">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs text-slate-600">
+        <p>CSPod &middot; Email Design Reference &middot; 2026</p>
+        <div class="flex items-center gap-4">
+          <a href="push-design-guide.html" class="text-slate-500 hover:text-slate-300 transition-colors">&larr; Push Design Guide</a>
+          <a href="inapp-design-guide.html" class="text-slate-500 hover:text-slate-300 transition-colors">In-App Design Guide &rarr;</a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+</main>
+
+<!-- Sidebar scroll spy -->
+<script>
+(function() {
+  const links = document.querySelectorAll('.toc-link');
+  const sections = [];
+  links.forEach(link => {
+    const id = link.getAttribute('href').slice(1);
+    const el = document.getElementById(id);
+    if (el) sections.push({ id, el, link });
+  });
+
+  function update() {
+    let current = sections[0];
+    const offset = window.scrollY + 100;
+    for (const s of sections) {
+      if (s.el.offsetTop <= offset) current = s;
+    }
+    links.forEach(l => l.classList.remove('active'));
+    if (current) current.link.classList.add('active');
+  }
+
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+})();
+</script>
+</body>
+</html>

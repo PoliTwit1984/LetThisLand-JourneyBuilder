@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rapsodo In-App Message Design Guide</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], barlow: ['Barlow', 'sans-serif'] },
+          colors: { rapsodo: '#ce2029' }
+        }
+      }
+    }
+  </script>
+  <style>
+    html { font-family: 'Inter', system-ui, sans-serif; }
+    body { background: #0f172a; }
+    .toc-link { transition: color 0.15s, border-color 0.15s; }
+    .toc-link.active { color: #f8fafc; border-left-color: #ce2029; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    .demo-phone {
+      width: 320px;
+      height: 560px;
+      border-radius: 32px;
+      border: 3px solid #334155;
+      position: relative;
+      overflow: hidden;
+      background: #1e293b;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.4);
+    }
+    .demo-phone::before {
+      content: '';
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 24px;
+      background: #0f172a;
+      border-radius: 12px;
+      z-index: 50;
+    }
+    .icon-grid-item { transition: transform 0.15s, box-shadow 0.15s; }
+    .icon-grid-item:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(206,32,41,0.15); }
+    .comparison-card { transition: box-shadow 0.2s; }
+    .comparison-card:hover { box-shadow: 0 0 24px rgba(206,32,41,0.1); }
+  </style>
+</head>
+<body class="text-slate-300 antialiased">
+
+<!-- Sidebar -->
+<nav id="sidebar" class="fixed top-0 left-0 w-56 h-screen bg-slate-950/80 backdrop-blur border-r border-slate-800 z-40 overflow-y-auto py-8 px-4 hidden lg:block">
+  <div class="mb-8">
+    <div class="flex items-center gap-2 mb-1">
+      <div class="w-7 h-7 rounded-lg bg-rapsodo flex items-center justify-center">
+        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3"/></svg>
+      </div>
+      <span class="text-sm font-bold text-white tracking-tight">In-App Guide</span>
+    </div>
+    <p class="text-[11px] text-slate-500">Rapsodo Journey Builder</p>
+  </div>
+  <ul class="space-y-1 text-[13px]">
+    <li><a href="#overview" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Overview</a></li>
+    <li><a href="#principles" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Design Principles</a></li>
+    <li><a href="#formats" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Format Guide</a></li>
+    <li><a href="#format-modal" class="toc-link block py-1.5 pl-6 border-l-2 border-transparent text-slate-500 hover:text-slate-200">Modal</a></li>
+    <li><a href="#format-banner" class="toc-link block py-1.5 pl-6 border-l-2 border-transparent text-slate-500 hover:text-slate-200">Banner</a></li>
+    <li><a href="#format-fullscreen" class="toc-link block py-1.5 pl-6 border-l-2 border-transparent text-slate-500 hover:text-slate-200">Fullscreen</a></li>
+    <li><a href="#copy" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Copy Constraints</a></li>
+    <li><a href="#timing" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Timing Rules</a></li>
+    <li><a href="#iterable" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Iterable Notes</a></li>
+    <li><a href="#before-after" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Before / After</a></li>
+  </ul>
+</nav>
+
+<!-- Main -->
+<main class="lg:ml-56">
+  <div class="max-w-4xl mx-auto px-6 py-12">
+
+    <!-- Header -->
+    <header class="mb-16">
+      <p class="text-xs font-semibold tracking-widest text-rapsodo uppercase mb-3">Design Reference</p>
+      <h1 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight mb-4">In-App Message<br/>Design Guide</h1>
+      <p class="text-lg text-slate-400 max-w-2xl">Design system, live examples, copy constraints, and implementation notes for Rapsodo in-app messages delivered through Iterable.</p>
+    </header>
+
+    <!-- ============ SECTION 1: OVERVIEW ============ -->
+    <section id="overview" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">1</span>
+        Overview
+      </h2>
+      <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 mb-6">
+        <p class="text-slate-300 leading-relaxed mb-4">In-app messages are the highest-intent touchpoint in our lifecycle stack. Unlike push or email, they reach users <em>while they are already in the app</em> with interaction rates of <strong class="text-white">25&ndash;40%</strong> &mdash; roughly 10x push and 20x email.</p>
+        <p class="text-slate-300 leading-relaxed mb-6">We support three formats, each with a specific role:</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-slate-900/60 rounded-xl p-5 border border-slate-700/40">
+            <div class="text-2xl font-extrabold text-white mb-1">~35%</div>
+            <div class="text-xs font-semibold text-rapsodo uppercase tracking-wider mb-2">Modal</div>
+            <p class="text-sm text-slate-400">Centered card over dimmed overlay. High-stakes feature discovery and conversion prompts.</p>
+          </div>
+          <div class="bg-slate-900/60 rounded-xl p-5 border border-slate-700/40">
+            <div class="text-2xl font-extrabold text-white mb-1">~12.5%</div>
+            <div class="text-xs font-semibold text-rapsodo uppercase tracking-wider mb-2">Banner</div>
+            <p class="text-sm text-slate-400">Floating notification bar. Gentle nudges and informational prompts that don't block the UI.</p>
+          </div>
+          <div class="bg-slate-900/60 rounded-xl p-5 border border-slate-700/40">
+            <div class="text-2xl font-extrabold text-white mb-1">Rare</div>
+            <div class="text-xs font-semibold text-rapsodo uppercase tracking-wider mb-2">Fullscreen</div>
+            <p class="text-sm text-slate-400">Dark full-bleed takeover. Reserved for milestones, celebrations, and major feature reveals.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 2: DESIGN PRINCIPLES ============ -->
+    <section id="principles" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">2</span>
+        Design Principles
+      </h2>
+      <p class="text-slate-400 mb-8">Eight upgrades that move our in-app messages from "Iterable default template" to intentional brand communications.</p>
+
+      <!-- Icon Set -->
+      <div class="mb-8">
+        <h3 class="text-lg font-semibold text-white mb-4">1. Contextual Icons Per Feature</h3>
+        <p class="text-sm text-slate-400 mb-4">Every feature gets its own icon in a red-tinted circle. No more single generic icon repeated across every message.</p>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <!-- Practice = Bullseye -->
+          <div class="icon-grid-item bg-slate-800/60 border border-slate-700/40 rounded-xl p-4 text-center">
+            <div class="w-12 h-12 mx-auto mb-2 rounded-full bg-red-900/30 flex items-center justify-center">
+              <svg class="w-6 h-6 text-rapsodo" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+            </div>
+            <div class="text-xs font-semibold text-white">Practice</div>
+            <div class="text-[10px] text-slate-500">Bullseye</div>
+          </div>
+          <!-- Review = Bar Chart -->
+          <div class="icon-grid-item bg-slate-800/60 border border-slate-700/40 rounded-xl p-4 text-center">
+            <div class="w-12 h-12 mx-auto mb-2 rounded-full bg-red-900/30 flex items-center justify-center">
+              <svg class="w-6 h-6 text-rapsodo" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="4" y="10" width="4" height="10" rx="1"/><rect x="10" y="6" width="4" height="14" rx="1"/><rect x="16" y="2" width="4" height="18" rx="1"/></svg>
+            </div>
+            <div class="text-xs font-semibold text-white">Review</div>
+            <div class="text-[10px] text-slate-500">Bar Chart</div>
+          </div>
+          <!-- Insights = Trend Line -->
+          <div class="icon-grid-item bg-slate-800/60 border border-slate-700/40 rounded-xl p-4 text-center">
+            <div class="w-12 h-12 mx-auto mb-2 rounded-full bg-red-900/30 flex items-center justify-center">
+              <svg class="w-6 h-6 text-rapsodo" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 18 8 12 13 15 21 6"/><polyline points="16 6 21 6 21 11"/></svg>
+            </div>
+            <div class="text-xs font-semibold text-white">Insights</div>
+            <div class="text-[10px] text-slate-500">Trend Line</div>
+          </div>
+          <!-- Courses = Flag -->
+          <div class="icon-grid-item bg-slate-800/60 border border-slate-700/40 rounded-xl p-4 text-center">
+            <div class="w-12 h-12 mx-auto mb-2 rounded-full bg-red-900/30 flex items-center justify-center">
+              <svg class="w-6 h-6 text-rapsodo" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+            </div>
+            <div class="text-xs font-semibold text-white">Courses</div>
+            <div class="text-[10px] text-slate-500">Flag</div>
+          </div>
+          <!-- Range = Ruler -->
+          <div class="icon-grid-item bg-slate-800/60 border border-slate-700/40 rounded-xl p-4 text-center">
+            <div class="w-12 h-12 mx-auto mb-2 rounded-full bg-red-900/30 flex items-center justify-center">
+              <svg class="w-6 h-6 text-rapsodo" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.7 7.3l-5-5a1 1 0 00-1.4 0l-13 13a1 1 0 000 1.4l5 5a1 1 0 001.4 0l13-13a1 1 0 000-1.4z"/><line x1="7" y1="13" x2="10" y2="10"/><line x1="10" y1="16" x2="13" y2="13"/><line x1="13" y1="19" x2="16" y2="16"/></svg>
+            </div>
+            <div class="text-xs font-semibold text-white">Range</div>
+            <div class="text-[10px] text-slate-500">Ruler</div>
+          </div>
+          <!-- Target = Crosshair -->
+          <div class="icon-grid-item bg-slate-800/60 border border-slate-700/40 rounded-xl p-4 text-center">
+            <div class="w-12 h-12 mx-auto mb-2 rounded-full bg-red-900/30 flex items-center justify-center">
+              <svg class="w-6 h-6 text-rapsodo" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>
+            </div>
+            <div class="text-xs font-semibold text-white">Target</div>
+            <div class="text-[10px] text-slate-500">Crosshair</div>
+          </div>
+          <!-- Combine = Trophy -->
+          <div class="icon-grid-item bg-slate-800/60 border border-slate-700/40 rounded-xl p-4 text-center">
+            <div class="w-12 h-12 mx-auto mb-2 rounded-full bg-red-900/30 flex items-center justify-center">
+              <svg class="w-6 h-6 text-rapsodo" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9H4a2 2 0 01-2-2V5a2 2 0 012-2h2"/><path d="M18 9h2a2 2 0 002-2V5a2 2 0 00-2-2h-2"/><path d="M6 3h12v7a6 6 0 11-12 0V3z"/><path d="M9 21h6"/><path d="M12 16v5"/></svg>
+            </div>
+            <div class="text-xs font-semibold text-white">Combine</div>
+            <div class="text-[10px] text-slate-500">Trophy</div>
+          </div>
+          <!-- Video = Play -->
+          <div class="icon-grid-item bg-slate-800/60 border border-slate-700/40 rounded-xl p-4 text-center">
+            <div class="w-12 h-12 mx-auto mb-2 rounded-full bg-red-900/30 flex items-center justify-center">
+              <svg class="w-6 h-6 text-rapsodo" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </div>
+            <div class="text-xs font-semibold text-white">Video</div>
+            <div class="text-[10px] text-slate-500">Play</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Remaining principles -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-slate-800/40 border border-slate-700/40 rounded-xl p-5">
+          <h4 class="text-sm font-bold text-white mb-1">2. Barlow Typography</h4>
+          <p class="text-sm text-slate-400">Loaded via <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">@import</code>. 24px/800 headlines, 14px/400 body. Brand typeface, not system fonts.</p>
+        </div>
+        <div class="bg-slate-800/40 border border-slate-700/40 rounded-xl p-5">
+          <h4 class="text-sm font-bold text-white mb-1">3. Generous Spacing</h4>
+          <p class="text-sm text-slate-400">32px card padding (up from 24px). 22px icon-to-headline gap. 28px body-to-CTA. Premium feel through breathing room.</p>
+        </div>
+        <div class="bg-slate-800/40 border border-slate-700/40 rounded-xl p-5">
+          <h4 class="text-sm font-bold text-white mb-1">4. Pill-Shaped CTAs</h4>
+          <p class="text-sm text-slate-400"><code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">border-radius: 999px</code>, 16px vertical padding. Matches native iOS/Android button patterns.</p>
+        </div>
+        <div class="bg-slate-800/40 border border-slate-700/40 rounded-xl p-5">
+          <h4 class="text-sm font-bold text-white mb-1">5. Layered Shadows</h4>
+          <p class="text-sm text-slate-400">Tight near shadow + diffused far shadow. Reads native, not as a floating div. <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">0 2px 8px</code> + <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">0 16px 48px</code>.</p>
+        </div>
+        <div class="bg-slate-800/40 border border-slate-700/40 rounded-xl p-5">
+          <h4 class="text-sm font-bold text-white mb-1">6. Dark Card Variant</h4>
+          <p class="text-sm text-slate-400">Dark background (<code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">#1a1a1a</code>) for milestones and conversion moments. White text on dark reads as premium.</p>
+        </div>
+        <div class="bg-slate-800/40 border border-slate-700/40 rounded-xl p-5">
+          <h4 class="text-sm font-bold text-white mb-1">7. Higher Body Text Contrast</h4>
+          <p class="text-sm text-slate-400"><code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">#3f3f46</code> replaces <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">#52525b</code>. Better OLED readability. Small change, noticeable improvement.</p>
+        </div>
+        <div class="bg-slate-800/40 border border-slate-700/40 rounded-xl p-5 md:col-span-2">
+          <h4 class="text-sm font-bold text-white mb-1">8. Proper Dismiss Affordance</h4>
+          <p class="text-sm text-slate-400">Circle X button in top-right corner instead of text-only "Not now" link. Clear, tappable, and visible without feeling pushy.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 3: FORMAT GUIDE ============ -->
+    <section id="formats" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">3</span>
+        Format Guide
+      </h2>
+      <p class="text-slate-400 mb-10">Live rendered examples of each format with usage guidance.</p>
+
+      <!-- MODAL -->
+      <div id="format-modal" class="mb-16 scroll-mt-8">
+        <div class="flex items-center gap-3 mb-2">
+          <h3 class="text-xl font-bold text-white">Modal</h3>
+          <span class="text-xs font-semibold text-rapsodo bg-rapsodo/10 px-2.5 py-1 rounded-full">~35% interaction</span>
+        </div>
+        <p class="text-sm text-slate-400 mb-6">Centered card over a dimmed overlay. Use for high-stakes moments: feature discovery, conversion prompts, milestone celebrations. Commands full attention.</p>
+
+        <div class="flex flex-col lg:flex-row gap-8 items-start">
+          <!-- Phone mockup -->
+          <div class="demo-phone flex-shrink-0 mx-auto lg:mx-0">
+            <!-- Fake app background -->
+            <div style="position:absolute;inset:0;background:linear-gradient(135deg,#1a2332 0%,#0f1923 100%);display:flex;flex-direction:column;align-items:center;padding-top:48px;">
+              <div style="width:80%;height:6px;background:#2a3a4a;border-radius:3px;margin-bottom:10px;"></div>
+              <div style="width:60%;height:6px;background:#2a3a4a;border-radius:3px;margin-bottom:20px;"></div>
+              <div style="width:85%;height:120px;background:#1e2d3d;border-radius:12px;margin-bottom:12px;"></div>
+              <div style="width:85%;height:40px;background:#1e2d3d;border-radius:8px;margin-bottom:8px;"></div>
+              <div style="width:85%;height:40px;background:#1e2d3d;border-radius:8px;"></div>
+            </div>
+            <!-- Scrim -->
+            <div style="position:absolute;inset:0;background:rgba(0,0,0,0.6);z-index:10;"></div>
+            <!-- Modal Card -->
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;width:270px;background:#ffffff;border-radius:22px;padding:32px;box-shadow:0 2px 8px rgba(0,0,0,0.08),0 16px 48px rgba(0,0,0,0.18);text-align:center;font-family:'Barlow',sans-serif;">
+              <!-- Dismiss X -->
+              <div style="position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;background:#f4f4f5;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round"><line x1="2" y1="2" x2="10" y2="10"/><line x1="10" y1="2" x2="2" y2="10"/></svg>
+              </div>
+              <!-- Icon -->
+              <div style="width:52px;height:52px;border-radius:50%;background:rgba(206,32,41,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 22px;">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ce2029" stroke-width="2"><polyline points="3 18 8 12 13 15 21 6"/><polyline points="16 6 21 6 21 11"/></svg>
+              </div>
+              <!-- Title -->
+              <div style="font-size:22px;font-weight:800;color:#18181b;letter-spacing:-0.4px;line-height:1.2;margin-bottom:10px;">See How You're Improving</div>
+              <!-- Body -->
+              <div style="font-size:14px;font-weight:400;color:#3f3f46;line-height:1.5;margin-bottom:28px;">Session Insights shows your trends across every session. Spot patterns and level up.</div>
+              <!-- CTA -->
+              <div style="background:#ce2029;color:#ffffff;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:16px 24px;border-radius:999px;cursor:pointer;">View Insights</div>
+              <!-- Dismiss text -->
+              <div style="margin-top:14px;font-size:13px;color:#a1a1aa;cursor:pointer;">Not now</div>
+            </div>
+          </div>
+          <!-- Notes -->
+          <div class="flex-1 min-w-0">
+            <h4 class="text-sm font-bold text-white mb-3">When to use</h4>
+            <ul class="text-sm text-slate-400 space-y-2 mb-6">
+              <li class="flex gap-2"><span class="text-rapsodo mt-0.5">&#9679;</span>Feature discovery (first exposure to Session Insights, Courses, etc.)</li>
+              <li class="flex gap-2"><span class="text-rapsodo mt-0.5">&#9679;</span>Trial conversion prompts</li>
+              <li class="flex gap-2"><span class="text-rapsodo mt-0.5">&#9679;</span>Post-session nudges toward a specific next action</li>
+              <li class="flex gap-2"><span class="text-rapsodo mt-0.5">&#9679;</span>Milestone celebrations (100 shots, 10 sessions)</li>
+            </ul>
+            <h4 class="text-sm font-bold text-white mb-3">Key specs</h4>
+            <div class="text-sm text-slate-400 space-y-1.5">
+              <div><span class="text-slate-500 w-28 inline-block">Card radius</span> <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">22px</code></div>
+              <div><span class="text-slate-500 w-28 inline-block">Card padding</span> <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">32px</code></div>
+              <div><span class="text-slate-500 w-28 inline-block">Headline</span> <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">22px / 800 weight / Barlow</code></div>
+              <div><span class="text-slate-500 w-28 inline-block">Body</span> <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">14px / 400 weight / #3f3f46</code></div>
+              <div><span class="text-slate-500 w-28 inline-block">CTA padding</span> <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">16px 24px</code></div>
+              <div><span class="text-slate-500 w-28 inline-block">Shadow</span> <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">0 2px 8px rgba(0,0,0,0.08), 0 16px 48px rgba(0,0,0,0.18)</code></div>
+              <div><span class="text-slate-500 w-28 inline-block">Scrim</span> <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">rgba(0,0,0,0.6)</code></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BANNER -->
+      <div id="format-banner" class="mb-16 scroll-mt-8">
+        <div class="flex items-center gap-3 mb-2">
+          <h3 class="text-xl font-bold text-white">Banner</h3>
+          <span class="text-xs font-semibold text-rapsodo bg-rapsodo/10 px-2.5 py-1 rounded-full">~12.5% interaction</span>
+        </div>
+        <p class="text-sm text-slate-400 mb-6">Floating notification bar at the top of the screen. Non-blocking. Use for gentle nudges, tips, and reminders that don't demand immediate action.</p>
+
+        <div class="flex flex-col lg:flex-row gap-8 items-start">
+          <!-- Phone mockup -->
+          <div class="demo-phone flex-shrink-0 mx-auto lg:mx-0">
+            <!-- Fake app background -->
+            <div style="position:absolute;inset:0;background:linear-gradient(135deg,#1a2332 0%,#0f1923 100%);display:flex;flex-direction:column;align-items:center;padding-top:48px;">
+              <div style="width:80%;height:6px;background:#2a3a4a;border-radius:3px;margin-bottom:10px;"></div>
+              <div style="width:60%;height:6px;background:#2a3a4a;border-radius:3px;margin-bottom:20px;"></div>
+              <div style="width:85%;height:120px;background:#1e2d3d;border-radius:12px;margin-bottom:12px;"></div>
+              <div style="width:85%;height:40px;background:#1e2d3d;border-radius:8px;margin-bottom:8px;"></div>
+              <div style="width:85%;height:40px;background:#1e2d3d;border-radius:8px;"></div>
+            </div>
+            <!-- Banner -->
+            <div style="position:absolute;top:40px;left:12px;right:12px;z-index:20;background:#ffffff;border-radius:16px;padding:16px;box-shadow:0 1px 0 rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.1);display:flex;align-items:center;gap:12px;font-family:'Barlow',sans-serif;">
+              <!-- Icon -->
+              <div style="width:40px;height:40px;flex-shrink:0;border-radius:50%;background:rgba(206,32,41,0.1);display:flex;align-items:center;justify-content:center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ce2029" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+              </div>
+              <!-- Text -->
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:14px;font-weight:700;color:#18181b;letter-spacing:-0.2px;line-height:1.3;margin-bottom:2px;">Try Practice Mode</div>
+                <div style="font-size:12px;color:#3f3f46;line-height:1.4;">Dial in your distances with focused reps.</div>
+              </div>
+              <!-- CTA pill -->
+              <div style="flex-shrink:0;background:#ce2029;color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;padding:8px 14px;border-radius:999px;">Go</div>
+            </div>
+          </div>
+          <!-- Notes -->
+          <div class="flex-1 min-w-0">
+            <h4 class="text-sm font-bold text-white mb-3">When to use</h4>
+            <ul class="text-sm text-slate-400 space-y-2 mb-6">
+              <li class="flex gap-2"><span class="text-rapsodo mt-0.5">&#9679;</span>Pre-session suggestions (before the user starts hitting)</li>
+              <li class="flex gap-2"><span class="text-rapsodo mt-0.5">&#9679;</span>Feature tips ("Did you know...?")</li>
+              <li class="flex gap-2"><span class="text-rapsodo mt-0.5">&#9679;</span>Low-priority informational nudges</li>
+              <li class="flex gap-2"><span class="text-rapsodo mt-0.5">&#9679;</span>Any moment where interrupting the UI would be excessive</li>
+            </ul>
+            <h4 class="text-sm font-bold text-white mb-3">Key specs</h4>
+            <div class="text-sm text-slate-400 space-y-1.5">
+              <div><span class="text-slate-500 w-28 inline-block">Card radius</span> <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">16px</code></div>
+              <div><span class="text-slate-500 w-28 inline-block">Padding</span> <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">16px</code></div>
+              <div><span class="text-slate-500 w-28 inline-block">Title</span> <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">14px / 700 weight / Barlow</code></div>
+              <div><span class="text-slate-500 w-28 inline-block">Body</span> <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">12px / 400 weight / #3f3f46</code></div>
+              <div><span class="text-slate-500 w-28 inline-block">CTA pill</span> <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">8px 14px / 999px radius</code></div>
+              <div><span class="text-slate-500 w-28 inline-block">Shadow</span> <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">0 1px 0 rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.1)</code></div>
+            </div>
+            <div class="mt-4 bg-yellow-900/20 border border-yellow-800/30 rounded-lg p-3">
+              <p class="text-xs text-yellow-300/80"><strong>Note:</strong> Skip Barlow @import for banners. Speed matters more than brand typography at this format. Use system font stack.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FULLSCREEN -->
+      <div id="format-fullscreen" class="mb-8 scroll-mt-8">
+        <div class="flex items-center gap-3 mb-2">
+          <h3 class="text-xl font-bold text-white">Fullscreen</h3>
+          <span class="text-xs font-semibold text-slate-400 bg-slate-700/50 px-2.5 py-1 rounded-full">Rare &mdash; milestones only</span>
+        </div>
+        <p class="text-sm text-slate-400 mb-6">Dark full-bleed takeover. Communicates "this is a major moment" vs a notification. Reserved for milestones, celebrations, and major feature reveals.</p>
+
+        <div class="flex flex-col lg:flex-row gap-8 items-start">
+          <!-- Phone mockup -->
+          <div class="demo-phone flex-shrink-0 mx-auto lg:mx-0">
+            <!-- Full-bleed dark background -->
+            <div style="position:absolute;inset:0;background:linear-gradient(180deg,#0a0a0a 0%,#1a1a1a 50%,#1a1a1a 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Barlow',sans-serif;text-align:center;padding:40px 28px;">
+              <!-- Dismiss X -->
+              <div style="position:absolute;top:42px;right:16px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;">
+                <svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round"><line x1="2" y1="2" x2="10" y2="10"/><line x1="10" y1="2" x2="2" y2="10"/></svg>
+              </div>
+              <!-- Glowing icon -->
+              <div style="width:72px;height:72px;border-radius:50%;background:rgba(206,32,41,0.15);display:flex;align-items:center;justify-content:center;margin-bottom:28px;box-shadow:0 0 40px rgba(206,32,41,0.25),0 0 80px rgba(206,32,41,0.1);">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#ce2029" stroke-width="2"><path d="M6 9H4a2 2 0 01-2-2V5a2 2 0 012-2h2"/><path d="M18 9h2a2 2 0 002-2V5a2 2 0 00-2-2h-2"/><path d="M6 3h12v7a6 6 0 11-12 0V3z"/><path d="M9 21h6"/><path d="M12 16v5"/></svg>
+              </div>
+              <!-- Title -->
+              <div style="font-size:26px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;line-height:1.15;margin-bottom:12px;">100 Sessions Complete</div>
+              <!-- Body -->
+              <div style="font-size:14px;font-weight:400;color:rgba(255,255,255,0.6);line-height:1.6;margin-bottom:32px;">You've put in serious work. Check your Combine score to see how far you've come.</div>
+              <!-- CTA -->
+              <div style="background:#ce2029;color:#ffffff;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:16px 40px;border-radius:999px;box-shadow:0 4px 20px rgba(206,32,41,0.3);">View Combine</div>
+              <!-- Dismiss text -->
+              <div style="margin-top:16px;font-size:13px;color:rgba(255,255,255,0.3);">Dismiss</div>
+            </div>
+          </div>
+          <!-- Notes -->
+          <div class="flex-1 min-w-0">
+            <h4 class="text-sm font-bold text-white mb-3">When to use</h4>
+            <ul class="text-sm text-slate-400 space-y-2 mb-6">
+              <li class="flex gap-2"><span class="text-rapsodo mt-0.5">&#9679;</span>Major milestones (100 sessions, 1000 shots, first Combine score)</li>
+              <li class="flex gap-2"><span class="text-rapsodo mt-0.5">&#9679;</span>Premium feature announcements</li>
+              <li class="flex gap-2"><span class="text-rapsodo mt-0.5">&#9679;</span>Celebration moments that justify full takeover</li>
+            </ul>
+            <h4 class="text-sm font-bold text-white mb-3">Key specs</h4>
+            <div class="text-sm text-slate-400 space-y-1.5">
+              <div><span class="text-slate-500 w-28 inline-block">Background</span> <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">#1a1a1a</code></div>
+              <div><span class="text-slate-500 w-28 inline-block">Headline</span> <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">26px / 800 weight / #ffffff</code></div>
+              <div><span class="text-slate-500 w-28 inline-block">Body</span> <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">14px / 400 / rgba(255,255,255,0.6)</code></div>
+              <div><span class="text-slate-500 w-28 inline-block">Icon glow</span> <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">0 0 40px rgba(206,32,41,0.25)</code></div>
+              <div><span class="text-slate-500 w-28 inline-block">CTA glow</span> <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">0 4px 20px rgba(206,32,41,0.3)</code></div>
+            </div>
+            <div class="mt-4 bg-red-900/20 border border-red-800/30 rounded-lg p-3">
+              <p class="text-xs text-red-300/80"><strong>Use sparingly.</strong> Fullscreen takeovers lose impact if overused. Max once per user per week. Reserve for moments that genuinely deserve it.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 4: COPY CONSTRAINTS ============ -->
+    <section id="copy" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">4</span>
+        Copy Constraints
+      </h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="text-left border-b border-slate-700">
+              <th class="py-3 pr-4 font-semibold text-white">Element</th>
+              <th class="py-3 pr-4 font-semibold text-white">Max Length</th>
+              <th class="py-3 pr-4 font-semibold text-white">Rules</th>
+              <th class="py-3 font-semibold text-white">Example</th>
+            </tr>
+          </thead>
+          <tbody class="text-slate-400">
+            <tr class="border-b border-slate-800">
+              <td class="py-3 pr-4 font-medium text-slate-200">Title</td>
+              <td class="py-3 pr-4"><code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">40 chars</code></td>
+              <td class="py-3 pr-4">Benefit-focused. Lead with what the user gains, not the feature name.</td>
+              <td class="py-3 font-medium text-white" style="font-family:'Barlow',sans-serif;">"See How You're Improving"</td>
+            </tr>
+            <tr class="border-b border-slate-800">
+              <td class="py-3 pr-4 font-medium text-slate-200">Body</td>
+              <td class="py-3 pr-4"><code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">150 chars</code> <span class="text-xs text-slate-500">(100 ideal)</span></td>
+              <td class="py-3 pr-4">1&ndash;2 sentences max. Reinforce value. No jargon.</td>
+              <td class="py-3">"Session Insights shows your trends across every session. Spot patterns and level up."</td>
+            </tr>
+            <tr class="border-b border-slate-800">
+              <td class="py-3 pr-4 font-medium text-slate-200">Button</td>
+              <td class="py-3 pr-4"><code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">1&ndash;3 words</code></td>
+              <td class="py-3 pr-4">Uppercase. Action verb. No "Learn More" &mdash; too passive.</td>
+              <td class="py-3"><span class="inline-block bg-rapsodo text-white text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full">VIEW INSIGHTS</span></td>
+            </tr>
+            <tr>
+              <td class="py-3 pr-4 font-medium text-slate-200">Dismiss</td>
+              <td class="py-3 pr-4"><code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">Required</code></td>
+              <td class="py-3 pr-4">Always include. Circle X button or "Not now" text link. Never hide the exit.</td>
+              <td class="py-3 text-slate-500">Circle X or "Not now"</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-6 bg-slate-800/40 border border-slate-700/40 rounded-xl p-5">
+        <h4 class="text-sm font-bold text-white mb-2">Personalization</h4>
+        <p class="text-sm text-slate-400">Use Handlebars merge tags when possible. <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">{{firstName}}</code>, <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">{{total_shots}}</code>, <code class="text-xs bg-slate-700/50 px-1.5 py-0.5 rounded">{{session_count}}</code>. Data-driven copy outperforms generic every time. "You hit {{total_shots}} shots this week" beats "Keep practicing."</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 5: TIMING RULES ============ -->
+    <section id="timing" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">5</span>
+        Timing Rules
+      </h2>
+      <div class="space-y-4">
+        <div class="flex gap-4 items-start bg-slate-800/40 border border-slate-700/40 rounded-xl p-5">
+          <div class="w-8 h-8 rounded-lg bg-green-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-white mb-1">Trigger on behavioral events only</h4>
+            <p class="text-sm text-slate-400">Never calendar-based. Messages fire on session_complete, feature_opened, milestone_reached, etc. The user's action determines the message, not a scheduled date.</p>
+          </div>
+        </div>
+        <div class="flex gap-4 items-start bg-slate-800/40 border border-slate-700/40 rounded-xl p-5">
+          <div class="w-8 h-8 rounded-lg bg-green-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-white mb-1">Post-session = highest intent</h4>
+            <p class="text-sm text-slate-400">Right after a practice session ends, the user is engaged and primed for a next action. This is the best time for modals pointing to Session Review, Insights, or Courses.</p>
+          </div>
+        </div>
+        <div class="flex gap-4 items-start bg-slate-800/40 border border-slate-700/40 rounded-xl p-5">
+          <div class="w-8 h-8 rounded-lg bg-yellow-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"/></svg>
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-white mb-1">Pre-session = banner, not modal</h4>
+            <p class="text-sm text-slate-400">If the user just opened the app and hasn't started yet, use a banner. Don't block them with a modal before they've done what they came to do.</p>
+          </div>
+        </div>
+        <div class="flex gap-4 items-start bg-slate-800/40 border border-slate-700/40 rounded-xl p-5">
+          <div class="w-8 h-8 rounded-lg bg-red-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-white mb-1">Never interrupt mid-session</h4>
+            <p class="text-sm text-slate-400">While a user is actively hitting shots, no in-app messages. Zero exceptions. Wait for session_complete or a natural pause state.</p>
+          </div>
+        </div>
+        <div class="flex gap-4 items-start bg-slate-800/40 border border-slate-700/40 rounded-xl p-5">
+          <div class="w-8 h-8 rounded-lg bg-blue-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-white mb-1">InApp is independent of email/push cadence</h4>
+            <p class="text-sm text-slate-400">In-app messages don't count toward email or push frequency caps. They're a separate channel. A user can receive an email AND an in-app message on the same day without overcommunication &mdash; they're in completely different contexts.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 6: ITERABLE NOTES ============ -->
+    <section id="iterable" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">6</span>
+        Iterable Implementation
+      </h2>
+      <div class="space-y-4">
+        <div class="bg-slate-800/40 border border-slate-700/40 rounded-xl p-5">
+          <h4 class="text-sm font-bold text-white mb-2">Template Editor</h4>
+          <p class="text-sm text-slate-400 mb-2">Paste the full HTML into Iterable's <strong class="text-slate-200">Side-by-Side</strong> editor. All CSS must be inline &mdash; no external stylesheets. No JavaScript execution.</p>
+        </div>
+        <div class="bg-slate-800/40 border border-slate-700/40 rounded-xl p-5">
+          <h4 class="text-sm font-bold text-white mb-2">Barlow Font Loading</h4>
+          <p class="text-sm text-slate-400 mb-3">Add this at the top of the template HTML. Adds ~100ms load time &mdash; worth it for modals and fullscreen. Skip for banners.</p>
+          <pre class="bg-slate-900 rounded-lg p-4 text-xs text-slate-300 overflow-x-auto"><code>&lt;style&gt;
+  @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@600;700;800&amp;display=swap');
+&lt;/style&gt;</code></pre>
+        </div>
+        <div class="bg-slate-800/40 border border-slate-700/40 rounded-xl p-5">
+          <h4 class="text-sm font-bold text-white mb-2">Deep Links</h4>
+          <p class="text-sm text-slate-400 mb-3">CTA buttons link to specific app screens via URI scheme:</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div class="bg-slate-900/60 rounded-lg px-3 py-2 flex items-center justify-between">
+              <span class="text-xs text-slate-400">Practice</span>
+              <code class="text-xs text-rapsodo">rapsodo://practice</code>
+            </div>
+            <div class="bg-slate-900/60 rounded-lg px-3 py-2 flex items-center justify-between">
+              <span class="text-xs text-slate-400">Session Review</span>
+              <code class="text-xs text-rapsodo">rapsodo://session-review</code>
+            </div>
+            <div class="bg-slate-900/60 rounded-lg px-3 py-2 flex items-center justify-between">
+              <span class="text-xs text-slate-400">Session Insights</span>
+              <code class="text-xs text-rapsodo">rapsodo://session-insights</code>
+            </div>
+            <div class="bg-slate-900/60 rounded-lg px-3 py-2 flex items-center justify-between">
+              <span class="text-xs text-slate-400">Courses</span>
+              <code class="text-xs text-rapsodo">rapsodo://courses</code>
+            </div>
+            <div class="bg-slate-900/60 rounded-lg px-3 py-2 flex items-center justify-between">
+              <span class="text-xs text-slate-400">Combine</span>
+              <code class="text-xs text-rapsodo">rapsodo://combine</code>
+            </div>
+            <div class="bg-slate-900/60 rounded-lg px-3 py-2 flex items-center justify-between">
+              <span class="text-xs text-slate-400">Target Mode</span>
+              <code class="text-xs text-rapsodo">rapsodo://target-mode</code>
+            </div>
+            <div class="bg-slate-900/60 rounded-lg px-3 py-2 flex items-center justify-between">
+              <span class="text-xs text-slate-400">Range Mode</span>
+              <code class="text-xs text-rapsodo">rapsodo://range-mode</code>
+            </div>
+            <div class="bg-slate-900/60 rounded-lg px-3 py-2 flex items-center justify-between">
+              <span class="text-xs text-slate-400">Video Export</span>
+              <code class="text-xs text-rapsodo">rapsodo://video-export</code>
+            </div>
+          </div>
+        </div>
+        <div class="bg-slate-800/40 border border-slate-700/40 rounded-xl p-5">
+          <h4 class="text-sm font-bold text-white mb-2">Dismiss Action</h4>
+          <p class="text-sm text-slate-400">Both the circle X button and "Not now" text link to:</p>
+          <pre class="bg-slate-900 rounded-lg p-3 mt-2 text-xs text-slate-300 overflow-x-auto"><code>&lt;a href="iterable://dismiss"&gt;Not now&lt;/a&gt;</code></pre>
+        </div>
+        <div class="bg-slate-800/40 border border-slate-700/40 rounded-xl p-5">
+          <h4 class="text-sm font-bold text-white mb-2">Handlebars Merge Tags</h4>
+          <p class="text-sm text-slate-400 mb-3">Iterable supports dynamic personalization:</p>
+          <div class="flex flex-wrap gap-2">
+            <code class="text-xs bg-slate-900/60 text-slate-300 px-2.5 py-1.5 rounded-lg">{{firstName}}</code>
+            <code class="text-xs bg-slate-900/60 text-slate-300 px-2.5 py-1.5 rounded-lg">{{total_shots}}</code>
+            <code class="text-xs bg-slate-900/60 text-slate-300 px-2.5 py-1.5 rounded-lg">{{session_count}}</code>
+            <code class="text-xs bg-slate-900/60 text-slate-300 px-2.5 py-1.5 rounded-lg">{{last_session_date}}</code>
+            <code class="text-xs bg-slate-900/60 text-slate-300 px-2.5 py-1.5 rounded-lg">{{combine_score}}</code>
+            <code class="text-xs bg-slate-900/60 text-slate-300 px-2.5 py-1.5 rounded-lg">{{trial_days_remaining}}</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 7: BEFORE / AFTER ============ -->
+    <section id="before-after" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">7</span>
+        Before / After
+      </h2>
+      <p class="text-slate-400 mb-8">Side-by-side comparison of what changed.</p>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- BEFORE -->
+        <div class="comparison-card bg-slate-800/40 border border-slate-700/40 rounded-2xl overflow-hidden">
+          <div class="px-5 py-3 bg-slate-700/30 border-b border-slate-700/50">
+            <span class="text-xs font-bold text-red-400 uppercase tracking-wider">Before</span>
+          </div>
+          <div class="p-6 flex justify-center">
+            <!-- Old modal -->
+            <div style="width:240px;background:#ffffff;border-radius:16px;padding:24px;box-shadow:0 12px 40px rgba(0,0,0,0.25);text-align:center;font-family:-apple-system,system-ui,sans-serif;">
+              <!-- Generic icon -->
+              <div style="width:44px;height:44px;border-radius:8px;background:#ce2029;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
+              <!-- Title -->
+              <div style="font-size:20px;font-weight:700;color:#18181b;letter-spacing:-0.3px;margin-bottom:8px;">Check Your Insights</div>
+              <!-- Body -->
+              <div style="font-size:15px;color:#52525b;line-height:1.45;margin-bottom:24px;">View your session insights to see how you're improving over time.</div>
+              <!-- CTA -->
+              <div style="background:#ce2029;color:#fff;font-size:15px;font-weight:700;padding:14px 20px;border-radius:10px;min-width:180px;">View Insights</div>
+              <!-- Dismiss -->
+              <div style="margin-top:14px;font-size:13px;color:#a1a1aa;">Not now</div>
+            </div>
+          </div>
+          <div class="px-5 pb-5">
+            <ul class="text-xs text-slate-500 space-y-1.5">
+              <li class="flex gap-2"><span class="text-red-400">&#10005;</span>Generic icon (same on every message)</li>
+              <li class="flex gap-2"><span class="text-red-400">&#10005;</span>System font (-apple-system)</li>
+              <li class="flex gap-2"><span class="text-red-400">&#10005;</span>20px headline, 15px body (flat hierarchy)</li>
+              <li class="flex gap-2"><span class="text-red-400">&#10005;</span>Single flat shadow</li>
+              <li class="flex gap-2"><span class="text-red-400">&#10005;</span>10px radius button (mismatched with card)</li>
+              <li class="flex gap-2"><span class="text-red-400">&#10005;</span>24px card padding (cramped)</li>
+              <li class="flex gap-2"><span class="text-red-400">&#10005;</span>Body color #52525b (washed on OLED)</li>
+              <li class="flex gap-2"><span class="text-red-400">&#10005;</span>Text-only dismiss</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- AFTER -->
+        <div class="comparison-card bg-slate-800/40 border border-rapsodo/20 rounded-2xl overflow-hidden">
+          <div class="px-5 py-3 bg-rapsodo/10 border-b border-rapsodo/20">
+            <span class="text-xs font-bold text-green-400 uppercase tracking-wider">After</span>
+          </div>
+          <div class="p-6 flex justify-center">
+            <!-- New modal -->
+            <div style="width:240px;background:#ffffff;border-radius:22px;padding:32px 28px;box-shadow:0 2px 8px rgba(0,0,0,0.08),0 16px 48px rgba(0,0,0,0.18);text-align:center;font-family:'Barlow',sans-serif;position:relative;">
+              <!-- Dismiss X -->
+              <div style="position:absolute;top:10px;right:10px;width:26px;height:26px;border-radius:50%;background:#f4f4f5;display:flex;align-items:center;justify-content:center;">
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round"><line x1="2" y1="2" x2="10" y2="10"/><line x1="10" y1="2" x2="2" y2="10"/></svg>
+              </div>
+              <!-- Contextual icon -->
+              <div style="width:48px;height:48px;border-radius:50%;background:rgba(206,32,41,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 22px;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ce2029" stroke-width="2"><polyline points="3 18 8 12 13 15 21 6"/><polyline points="16 6 21 6 21 11"/></svg>
+              </div>
+              <!-- Title -->
+              <div style="font-size:22px;font-weight:800;color:#18181b;letter-spacing:-0.4px;line-height:1.2;margin-bottom:10px;">See How You're Improving</div>
+              <!-- Body -->
+              <div style="font-size:14px;font-weight:400;color:#3f3f46;line-height:1.5;margin-bottom:28px;">Session Insights shows your trends across every session.</div>
+              <!-- CTA -->
+              <div style="background:#ce2029;color:#fff;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:16px 24px;border-radius:999px;">View Insights</div>
+              <!-- Dismiss -->
+              <div style="margin-top:14px;font-size:13px;color:#a1a1aa;">Not now</div>
+            </div>
+          </div>
+          <div class="px-5 pb-5">
+            <ul class="text-xs text-slate-500 space-y-1.5">
+              <li class="flex gap-2"><span class="text-green-400">&#10003;</span>Contextual icon (Insights = trend line)</li>
+              <li class="flex gap-2"><span class="text-green-400">&#10003;</span>Barlow brand typeface</li>
+              <li class="flex gap-2"><span class="text-green-400">&#10003;</span>22px headline / 14px body (1.57x ratio)</li>
+              <li class="flex gap-2"><span class="text-green-400">&#10003;</span>Layered shadow (near + far)</li>
+              <li class="flex gap-2"><span class="text-green-400">&#10003;</span>Pill-shaped button (999px radius)</li>
+              <li class="flex gap-2"><span class="text-green-400">&#10003;</span>32px card padding (spacious)</li>
+              <li class="flex gap-2"><span class="text-green-400">&#10003;</span>Body color #3f3f46 (OLED readable)</li>
+              <li class="flex gap-2"><span class="text-green-400">&#10003;</span>Circle X dismiss affordance</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary table -->
+      <div class="mt-8 overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="text-left border-b border-slate-700">
+              <th class="py-3 pr-4 font-semibold text-white">Property</th>
+              <th class="py-3 pr-4 font-semibold text-red-400">Before</th>
+              <th class="py-3 font-semibold text-green-400">After</th>
+            </tr>
+          </thead>
+          <tbody class="text-slate-400 text-xs">
+            <tr class="border-b border-slate-800">
+              <td class="py-2.5 pr-4 text-slate-300">Icon</td>
+              <td class="py-2.5 pr-4">Generic red square (same everywhere)</td>
+              <td class="py-2.5">Contextual SVG per feature in red-tinted circle</td>
+            </tr>
+            <tr class="border-b border-slate-800">
+              <td class="py-2.5 pr-4 text-slate-300">Typeface</td>
+              <td class="py-2.5 pr-4">-apple-system</td>
+              <td class="py-2.5">Barlow 600/700/800</td>
+            </tr>
+            <tr class="border-b border-slate-800">
+              <td class="py-2.5 pr-4 text-slate-300">Headline</td>
+              <td class="py-2.5 pr-4">20px / 700</td>
+              <td class="py-2.5">22px / 800</td>
+            </tr>
+            <tr class="border-b border-slate-800">
+              <td class="py-2.5 pr-4 text-slate-300">Body</td>
+              <td class="py-2.5 pr-4">15px / #52525b</td>
+              <td class="py-2.5">14px / #3f3f46</td>
+            </tr>
+            <tr class="border-b border-slate-800">
+              <td class="py-2.5 pr-4 text-slate-300">Card padding</td>
+              <td class="py-2.5 pr-4">24px</td>
+              <td class="py-2.5">32px</td>
+            </tr>
+            <tr class="border-b border-slate-800">
+              <td class="py-2.5 pr-4 text-slate-300">Card radius</td>
+              <td class="py-2.5 pr-4">16px</td>
+              <td class="py-2.5">22px</td>
+            </tr>
+            <tr class="border-b border-slate-800">
+              <td class="py-2.5 pr-4 text-slate-300">Shadow</td>
+              <td class="py-2.5 pr-4">0 12px 40px rgba(0,0,0,0.25)</td>
+              <td class="py-2.5">0 2px 8px + 0 16px 48px (layered)</td>
+            </tr>
+            <tr class="border-b border-slate-800">
+              <td class="py-2.5 pr-4 text-slate-300">Button radius</td>
+              <td class="py-2.5 pr-4">10px</td>
+              <td class="py-2.5">999px (pill)</td>
+            </tr>
+            <tr class="border-b border-slate-800">
+              <td class="py-2.5 pr-4 text-slate-300">Button padding</td>
+              <td class="py-2.5 pr-4">14px vertical</td>
+              <td class="py-2.5">16px vertical</td>
+            </tr>
+            <tr>
+              <td class="py-2.5 pr-4 text-slate-300">Dismiss</td>
+              <td class="py-2.5 pr-4">Text link only</td>
+              <td class="py-2.5">Circle X button + text fallback</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 pt-8 pb-12">
+      <p class="text-xs text-slate-600">Rapsodo In-App Message Design Guide &mdash; Journey Builder &mdash; Last updated February 2026</p>
+    </footer>
+
+  </div>
+</main>
+
+<!-- Scroll-spy -->
+<script>
+(function() {
+  const links = document.querySelectorAll('.toc-link');
+  const sections = [];
+  links.forEach(link => {
+    const id = link.getAttribute('href').slice(1);
+    const el = document.getElementById(id);
+    if (el) sections.push({ id, el, link });
+  });
+
+  function update() {
+    let current = sections[0];
+    const offset = window.scrollY + 100;
+    for (const s of sections) {
+      if (s.el.offsetTop <= offset) current = s;
+    }
+    links.forEach(l => l.classList.remove('active'));
+    if (current) current.link.classList.add('active');
+  }
+
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+})();
+</script>
+
+</body>
+</html>

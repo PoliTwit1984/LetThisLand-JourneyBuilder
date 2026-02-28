@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rapsodo Push Notification Design Guide</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], barlow: ['Barlow', 'sans-serif'] },
+          colors: { rapsodo: '#ce2029' }
+        }
+      }
+    }
+  </script>
+  <style>
+    html { font-family: 'Inter', system-ui, sans-serif; }
+    body { background: #0f172a; }
+    .toc-link { transition: color 0.15s, border-color 0.15s; }
+    .toc-link.active { color: #f8fafc; border-left-color: #ce2029; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    .stat-card { transition: transform 0.15s, box-shadow 0.15s; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(206,32,41,0.12); }
+    .pattern-card { transition: box-shadow 0.2s, border-color 0.2s; }
+    .pattern-card:hover { box-shadow: 0 0 24px rgba(206,32,41,0.1); border-color: #334155; }
+    .antipattern-card { transition: box-shadow 0.2s; }
+    .antipattern-card:hover { box-shadow: 0 0 20px rgba(239,68,68,0.08); }
+    .char-green { color: #22c55e; }
+    .char-yellow { color: #eab308; }
+    .char-red { color: #ef4444; }
+    .bg-char-green { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.25); }
+    .bg-char-yellow { background: rgba(234,179,8,0.12); border-color: rgba(234,179,8,0.25); }
+    .bg-char-red { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.25); }
+    /* iOS notification style */
+    .ios-notif {
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border-radius: 14px;
+      font-family: -apple-system, 'SF Pro Text', 'SF Pro Display', system-ui, sans-serif;
+    }
+    /* Android notification style */
+    .android-notif {
+      background: #2d2d2d;
+      border-radius: 16px;
+      font-family: 'Roboto', 'Inter', system-ui, sans-serif;
+    }
+  </style>
+</head>
+<body class="text-slate-300 antialiased">
+
+<!-- Sidebar -->
+<nav id="sidebar" class="fixed top-0 left-0 w-56 h-screen bg-slate-950/80 backdrop-blur border-r border-slate-800 z-40 overflow-y-auto py-8 px-4 hidden lg:block">
+  <div class="mb-8">
+    <div class="flex items-center gap-2 mb-1">
+      <div class="w-7 h-7 rounded-lg bg-rapsodo flex items-center justify-center">
+        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+      </div>
+      <span class="text-sm font-bold text-white tracking-tight">Push Guide</span>
+    </div>
+    <p class="text-[11px] text-slate-500">Rapsodo Journey Builder</p>
+  </div>
+  <ul class="space-y-1 text-[13px]">
+    <li><a href="#overview" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Overview Stats</a></li>
+    <li><a href="#anatomy" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Platform Anatomy</a></li>
+    <li><a href="#anatomy-ios" class="toc-link block py-1.5 pl-6 border-l-2 border-transparent text-slate-500 hover:text-slate-200">iOS</a></li>
+    <li><a href="#anatomy-android" class="toc-link block py-1.5 pl-6 border-l-2 border-transparent text-slate-500 hover:text-slate-200">Android</a></li>
+    <li><a href="#charlimits" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Character Limits</a></li>
+    <li><a href="#copyrules" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Copy Rules</a></li>
+    <li><a href="#antipatterns" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Anti-Patterns</a></li>
+    <li><a href="#deeplinks" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Deep Links</a></li>
+    <li><a href="#timing" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Timing Strategy</a></li>
+    <li><a href="#iterable" class="toc-link block py-1.5 pl-3 border-l-2 border-transparent text-slate-400 hover:text-slate-200">Iterable Notes</a></li>
+  </ul>
+</nav>
+
+<!-- Main -->
+<main class="lg:ml-56">
+  <div class="max-w-4xl mx-auto px-6 py-12">
+
+    <!-- Header -->
+    <header class="mb-16">
+      <p class="text-xs font-semibold tracking-widest text-rapsodo uppercase mb-3">Design Reference</p>
+      <h1 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight mb-4">Push Notification<br/>Design Guide</h1>
+      <p class="text-lg text-slate-400 max-w-2xl">Benchmarks, platform anatomy, copy patterns, deep links, and implementation notes for Rapsodo push notifications delivered through Iterable.</p>
+    </header>
+
+    <!-- ============ SECTION 1: OVERVIEW STATS ============ -->
+    <section id="overview" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">1</span>
+        Overview Stats
+      </h2>
+      <p class="text-slate-400 mb-8 max-w-2xl">Industry benchmarks for sports/fitness push notifications. These numbers set the ceiling and floor for every campaign.</p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        <!-- Behavioral CTR -->
+        <div class="stat-card rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Behavioral Trigger CTR</p>
+          <p class="text-3xl font-extrabold text-white mb-1">8&ndash;15%</p>
+          <p class="text-sm text-slate-400">Post-session, milestone, streak</p>
+        </div>
+        <!-- Broadcast CTR -->
+        <div class="stat-card rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Broadcast CTR</p>
+          <p class="text-3xl font-extrabold text-white mb-1">1&ndash;2%</p>
+          <p class="text-sm text-slate-400">Generic sends, feature announcements</p>
+        </div>
+        <!-- Opt-in iOS -->
+        <div class="stat-card rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">iOS Opt-In Rate</p>
+          <p class="text-3xl font-extrabold text-white mb-1">60%</p>
+          <p class="text-sm text-slate-400">Requires explicit permission prompt</p>
+        </div>
+        <!-- Opt-in Android -->
+        <div class="stat-card rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Android Opt-In Rate</p>
+          <p class="text-3xl font-extrabold text-white mb-1">81%</p>
+          <p class="text-sm text-slate-400">Opt-in by default (pre-Android 13)</p>
+        </div>
+        <!-- Fatigue Threshold -->
+        <div class="stat-card rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Fatigue Threshold</p>
+          <p class="text-3xl font-extrabold text-rapsodo mb-1">10%</p>
+          <p class="text-sm text-slate-400">Disable after 1 irrelevant push/week</p>
+        </div>
+        <!-- Multiplier -->
+        <div class="stat-card rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Behavioral vs Broadcast</p>
+          <p class="text-3xl font-extrabold text-white mb-1">6&ndash;8x</p>
+          <p class="text-sm text-slate-400">CTR multiplier for triggered sends</p>
+        </div>
+      </div>
+
+      <div class="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+        <p class="text-sm text-slate-400"><span class="text-white font-semibold">Key insight:</span> Every push notification either earns the next one or loses a subscriber. Behavioral triggers outperform broadcast by 6&ndash;8x because they arrive when the user already has context. One irrelevant push per week causes 10% of users to disable notifications entirely.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 2: PLATFORM ANATOMY ============ -->
+    <section id="anatomy" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">2</span>
+        Platform Anatomy
+      </h2>
+      <p class="text-slate-400 mb-8 max-w-2xl">How the same push notification renders on iOS and Android. Design for both, test on both.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+        <!-- iOS Mockup -->
+        <div id="anatomy-ios" class="scroll-mt-8">
+          <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-slate-400" fill="currentColor" viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            iOS Lock Screen
+          </h3>
+          <div class="rounded-2xl border border-slate-700/50 bg-slate-950 p-6 flex justify-center">
+            <!-- iOS phone frame -->
+            <div class="w-[300px] rounded-[28px] border-2 border-slate-700 bg-gradient-to-b from-slate-800 to-slate-900 overflow-hidden shadow-2xl">
+              <!-- Status bar -->
+              <div class="flex items-center justify-between px-6 pt-3 pb-1">
+                <span style="font-family:-apple-system,'SF Pro Text',system-ui,sans-serif" class="text-[13px] font-semibold text-white/90">9:41</span>
+                <div class="w-[72px] h-[22px] bg-black rounded-full mx-auto"></div>
+                <div class="flex items-center gap-1">
+                  <svg class="w-4 h-4 text-white/80" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21a1 1 0 01-.71-.29l-3-3a1 1 0 011.42-1.42l2.29 2.3 2.29-2.3a1 1 0 011.42 1.42l-3 3A1 1 0 0112 21z"/><path d="M12 18a5 5 0 00-3.54 1.46 1 1 0 01-1.42-1.42 7 7 0 019.9 0 1 1 0 01-1.42 1.42A5 5 0 0012 18z" opacity=".6"/></svg>
+                  <svg class="w-[22px] h-[11px] text-white/80" fill="currentColor" viewBox="0 0 25 12"><rect x="0" y="1" width="22" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1"/><rect x="23" y="4" width="1.5" height="4" rx="0.5"/><rect x="2" y="3" width="14" height="6" rx="1"/></svg>
+                </div>
+              </div>
+              <!-- Time/date -->
+              <div class="text-center pt-8 pb-6">
+                <p style="font-family:-apple-system,'SF Pro Display',system-ui,sans-serif" class="text-[52px] font-light text-white leading-none tracking-tight">9:41</p>
+                <p style="font-family:-apple-system,'SF Pro Text',system-ui,sans-serif" class="text-[14px] text-white/60 mt-1">Wednesday, February 26</p>
+              </div>
+              <!-- Notification -->
+              <div class="px-4 pb-8">
+                <div class="ios-notif p-3">
+                  <div class="flex items-start gap-2.5">
+                    <div class="w-9 h-9 rounded-[8px] bg-rapsodo flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span class="text-white font-extrabold text-[11px]">R</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center justify-between mb-0.5">
+                        <span style="font-family:-apple-system,'SF Pro Text',system-ui,sans-serif" class="text-[13px] font-semibold text-white/90">RAPSODO</span>
+                        <span style="font-family:-apple-system,'SF Pro Text',system-ui,sans-serif" class="text-[12px] text-white/40">now</span>
+                      </div>
+                      <p style="font-family:-apple-system,'SF Pro Text',system-ui,sans-serif" class="text-[14px] font-semibold text-white/95 leading-snug">Your Session Review is ready</p>
+                      <p style="font-family:-apple-system,'SF Pro Text',system-ui,sans-serif" class="text-[14px] text-white/70 leading-snug mt-0.5">47 shots analyzed &mdash; see your breakdown and compare to last session.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- iOS annotations -->
+          <div class="mt-4 space-y-2 text-sm">
+            <div class="flex items-start gap-2"><span class="text-slate-500 font-mono text-xs mt-0.5 w-20 flex-shrink-0">Font</span><span class="text-slate-400">SF Pro Text / SF Pro Display</span></div>
+            <div class="flex items-start gap-2"><span class="text-slate-500 font-mono text-xs mt-0.5 w-20 flex-shrink-0">Card</span><span class="text-slate-400">Blurred glass, 14px radius</span></div>
+            <div class="flex items-start gap-2"><span class="text-slate-500 font-mono text-xs mt-0.5 w-20 flex-shrink-0">Icon</span><span class="text-slate-400">App icon, 9px corner radius</span></div>
+            <div class="flex items-start gap-2"><span class="text-slate-500 font-mono text-xs mt-0.5 w-20 flex-shrink-0">Layout</span><span class="text-slate-400">Icon + Title + Body + Timestamp</span></div>
+          </div>
+        </div>
+
+        <!-- Android Mockup -->
+        <div id="anatomy-android" class="scroll-mt-8">
+          <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-slate-400" fill="currentColor" viewBox="0 0 24 24"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85a.637.637 0 00-.83.22l-1.88 3.24a11.463 11.463 0 00-8.94 0L5.65 5.67a.643.643 0 00-.87-.2c-.28.18-.37.54-.22.83L6.4 9.48A10.78 10.78 0 001 18h22a10.78 10.78 0 00-5.4-8.52zM7 15.25a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5zm10 0a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5z"/></svg>
+            Android Notification Shade
+          </h3>
+          <div class="rounded-2xl border border-slate-700/50 bg-slate-950 p-6 flex justify-center">
+            <!-- Android phone frame -->
+            <div class="w-[300px] rounded-[28px] border-2 border-slate-700 bg-[#1a1a1a] overflow-hidden shadow-2xl">
+              <!-- Status bar -->
+              <div class="flex items-center justify-between px-5 pt-2.5 pb-1">
+                <span class="text-[13px] font-medium text-white/80" style="font-family:'Roboto','Inter',system-ui,sans-serif">9:41</span>
+                <div class="flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5 text-white/70" fill="currentColor" viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 00-6 0zm-4-4l2 2a7.074 7.074 0 0110 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+                  <svg class="w-[20px] h-[10px] text-white/70" fill="currentColor" viewBox="0 0 25 12"><rect x="0" y="1" width="22" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1"/><rect x="2" y="3" width="16" height="6" rx="1"/></svg>
+                </div>
+              </div>
+              <!-- Shade header -->
+              <div class="px-5 pt-6 pb-4">
+                <p class="text-[32px] font-light text-white leading-none" style="font-family:'Roboto','Inter',system-ui,sans-serif">9:41</p>
+                <p class="text-[13px] text-white/50 mt-1" style="font-family:'Roboto','Inter',system-ui,sans-serif">Wed, Feb 26</p>
+              </div>
+              <!-- Notification -->
+              <div class="px-3 pb-8">
+                <div class="android-notif p-3.5">
+                  <div class="flex items-center gap-2 mb-2">
+                    <div class="w-5 h-5 rounded-full bg-rapsodo flex items-center justify-center flex-shrink-0">
+                      <span class="text-white font-bold text-[9px]">R</span>
+                    </div>
+                    <span class="text-[12px] text-white/50 font-medium" style="font-family:'Roboto','Inter',system-ui,sans-serif">Rapsodo</span>
+                    <span class="text-[11px] text-white/30 ml-auto" style="font-family:'Roboto','Inter',system-ui,sans-serif">now</span>
+                    <svg class="w-4 h-4 text-white/20" fill="currentColor" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                  </div>
+                  <p class="text-[15px] font-medium text-white/95 leading-snug" style="font-family:'Roboto','Inter',system-ui,sans-serif">Your Session Review is ready</p>
+                  <p class="text-[14px] text-white/60 leading-snug mt-1" style="font-family:'Roboto','Inter',system-ui,sans-serif">47 shots analyzed &mdash; see your breakdown</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Android annotations -->
+          <div class="mt-4 space-y-2 text-sm">
+            <div class="flex items-start gap-2"><span class="text-slate-500 font-mono text-xs mt-0.5 w-20 flex-shrink-0">Font</span><span class="text-slate-400">Roboto / Google Sans</span></div>
+            <div class="flex items-start gap-2"><span class="text-slate-500 font-mono text-xs mt-0.5 w-20 flex-shrink-0">Card</span><span class="text-slate-400">Material dark surface, 16px radius</span></div>
+            <div class="flex items-start gap-2"><span class="text-slate-500 font-mono text-xs mt-0.5 w-20 flex-shrink-0">Icon</span><span class="text-slate-400">Small icon (monochrome circle) + app color</span></div>
+            <div class="flex items-start gap-2"><span class="text-slate-500 font-mono text-xs mt-0.5 w-20 flex-shrink-0">Layout</span><span class="text-slate-400">Small icon + App name + Body + Expand chevron</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 3: CHARACTER LIMITS ============ -->
+    <section id="charlimits" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">3</span>
+        Character Limits
+      </h2>
+      <p class="text-slate-400 mb-8 max-w-2xl">Stay in the green zone. Users scan notifications in under 2 seconds &mdash; truncated text kills comprehension and CTR.</p>
+
+      <div class="rounded-xl border border-slate-800 bg-slate-900/50 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-800">
+              <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3 w-32">Field</th>
+              <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3">Platform</th>
+              <th class="text-center text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3">
+                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-green-500"></span>Safe</span>
+              </th>
+              <th class="text-center text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3">
+                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-yellow-500"></span>Caution</span>
+              </th>
+              <th class="text-center text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3">
+                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>Truncated</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/50">
+            <tr>
+              <td rowspan="2" class="px-5 py-3 text-white font-medium align-top pt-4">Title</td>
+              <td class="px-5 py-3 text-slate-400">Android</td>
+              <td class="px-5 py-3 text-center"><span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-semibold border bg-char-green char-green">&le; 30</span></td>
+              <td class="px-5 py-3 text-center"><span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-semibold border bg-char-yellow char-yellow">31&ndash;40</span></td>
+              <td class="px-5 py-3 text-center"><span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-semibold border bg-char-red char-red">41+</span></td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-slate-400">iOS</td>
+              <td class="px-5 py-3 text-center"><span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-semibold border bg-char-green char-green">&le; 40</span></td>
+              <td class="px-5 py-3 text-center"><span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-semibold border bg-char-yellow char-yellow">41&ndash;50</span></td>
+              <td class="px-5 py-3 text-center"><span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-semibold border bg-char-red char-red">51+</span></td>
+            </tr>
+            <tr>
+              <td rowspan="2" class="px-5 py-3 text-white font-medium align-top pt-4">Body</td>
+              <td class="px-5 py-3 text-slate-400">Android (collapsed)</td>
+              <td class="px-5 py-3 text-center"><span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-semibold border bg-char-green char-green">&le; 50</span></td>
+              <td class="px-5 py-3 text-center"><span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-semibold border bg-char-yellow char-yellow">51&ndash;80</span></td>
+              <td class="px-5 py-3 text-center"><span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-semibold border bg-char-red char-red">81+</span></td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-slate-400">iOS (collapsed)</td>
+              <td class="px-5 py-3 text-center"><span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-semibold border bg-char-green char-green">&le; 90</span></td>
+              <td class="px-5 py-3 text-center"><span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-semibold border bg-char-yellow char-yellow">91&ndash;120</span></td>
+              <td class="px-5 py-3 text-center"><span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-semibold border bg-char-red char-red">121+</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Visual char meter -->
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Title Example &mdash; 33 chars</p>
+          <div class="relative h-3 rounded-full bg-slate-800 overflow-hidden mb-2">
+            <div class="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-green-500 to-green-400" style="width:82%"></div>
+          </div>
+          <p class="text-sm text-white font-medium">"Your Session Review is ready"</p>
+          <p class="text-xs text-slate-500 mt-1">Android: safe | iOS: safe</p>
+        </div>
+        <div class="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Body Example &mdash; 46 chars</p>
+          <div class="relative h-3 rounded-full bg-slate-800 overflow-hidden mb-2">
+            <div class="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-green-500 to-yellow-400" style="width:57%"></div>
+          </div>
+          <p class="text-sm text-white font-medium">"47 shots analyzed &mdash; see your breakdown"</p>
+          <p class="text-xs text-slate-500 mt-1">Android: caution (collapsed) | iOS: safe</p>
+        </div>
+      </div>
+
+      <div class="mt-6 rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+        <p class="text-sm text-slate-400"><span class="text-white font-semibold">Rule of thumb:</span> Write for Android collapsed first (50 char body). If it works there, it works everywhere. Title should always read as a complete thought under 30 characters.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 4: COPY RULES ============ -->
+    <section id="copyrules" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">4</span>
+        Copy Rules
+      </h2>
+      <p class="text-slate-400 mb-8 max-w-2xl">Six copy patterns that work for fitness/sports push. Every notification should fit one of these frames.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <!-- Data Hook -->
+        <div class="pattern-card rounded-xl border border-slate-800/80 bg-slate-900/50 p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-6 h-6 rounded-md bg-blue-500/15 flex items-center justify-center">
+              <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+            </span>
+            <h3 class="text-sm font-bold text-white">Data Hook</h3>
+          </div>
+          <p class="text-sm text-slate-300 mb-3">Lead with the user's own number. Creates instant relevance.</p>
+          <div class="rounded-lg bg-slate-950/60 border border-slate-800 px-4 py-2.5">
+            <p class="text-sm text-white/80 italic">"47 shots yesterday &mdash; ready for more?"</p>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">Best for: post-session, weekly summary</p>
+        </div>
+
+        <!-- Streak -->
+        <div class="pattern-card rounded-xl border border-slate-800/80 bg-slate-900/50 p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-6 h-6 rounded-md bg-orange-500/15 flex items-center justify-center">
+              <svg class="w-3.5 h-3.5 text-orange-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z"/></svg>
+            </span>
+            <h3 class="text-sm font-bold text-white">Streak</h3>
+          </div>
+          <p class="text-sm text-slate-300 mb-3">Activate loss aversion. Users protect streaks.</p>
+          <div class="rounded-lg bg-slate-950/60 border border-slate-800 px-4 py-2.5">
+            <p class="text-sm text-white/80 italic">"3 sessions this week. Keep the streak going."</p>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">Best for: mid-week re-engagement, habit loop</p>
+        </div>
+
+        <!-- Feature Discovery -->
+        <div class="pattern-card rounded-xl border border-slate-800/80 bg-slate-900/50 p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-6 h-6 rounded-md bg-emerald-500/15 flex items-center justify-center">
+              <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z"/></svg>
+            </span>
+            <h3 class="text-sm font-bold text-white">Feature Discovery</h3>
+          </div>
+          <p class="text-sm text-slate-300 mb-3">Surface underused features at the right moment.</p>
+          <div class="rounded-lg bg-slate-950/60 border border-slate-800 px-4 py-2.5">
+            <p class="text-sm text-white/80 italic">"Your Session Review is ready"</p>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">Best for: Session Review, Target Mode, Stats</p>
+        </div>
+
+        <!-- Social Proof -->
+        <div class="pattern-card rounded-xl border border-slate-800/80 bg-slate-900/50 p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-6 h-6 rounded-md bg-purple-500/15 flex items-center justify-center">
+              <svg class="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
+            </span>
+            <h3 class="text-sm font-bold text-white">Social Proof</h3>
+          </div>
+          <p class="text-sm text-slate-300 mb-3">Benchmarks against the community. Competitive golfers respond.</p>
+          <div class="rounded-lg bg-slate-950/60 border border-slate-800 px-4 py-2.5">
+            <p class="text-sm text-white/80 italic">"Range Mode users hit 12% more greens"</p>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">Best for: feature adoption, mode promotion</p>
+        </div>
+
+        <!-- Achievement -->
+        <div class="pattern-card rounded-xl border border-slate-800/80 bg-slate-900/50 p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-6 h-6 rounded-md bg-yellow-500/15 flex items-center justify-center">
+              <svg class="w-3.5 h-3.5 text-yellow-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M18.75 4.236c.982.143 1.954.317 2.916.52A6.003 6.003 0 0016.27 9.728M18.75 4.236V4.5c0 2.108-.966 3.99-2.48 5.228m0 0a6.023 6.023 0 01-7.54 0"/></svg>
+            </span>
+            <h3 class="text-sm font-bold text-white">Achievement</h3>
+          </div>
+          <p class="text-sm text-slate-300 mb-3">Celebrate milestones. Positive reinforcement drives return.</p>
+          <div class="rounded-lg bg-slate-950/60 border border-slate-800 px-4 py-2.5">
+            <p class="text-sm text-white/80 italic">"You just passed 1,000 total shots"</p>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">Best for: milestone triggers, monthly summaries</p>
+        </div>
+
+        <!-- Context -->
+        <div class="pattern-card rounded-xl border border-slate-800/80 bg-slate-900/50 p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-6 h-6 rounded-md bg-cyan-500/15 flex items-center justify-center">
+              <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
+            </span>
+            <h3 class="text-sm font-bold text-white">Context</h3>
+          </div>
+          <p class="text-sm text-slate-300 mb-3">Real-world triggers. Weather, time of day, season.</p>
+          <div class="rounded-lg bg-slate-950/60 border border-slate-800 px-4 py-2.5">
+            <p class="text-sm text-white/80 italic">"Perfect range weather today"</p>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">Best for: weekend nudge, seasonal re-engagement</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ SECTION 5: ANTI-PATTERNS ============ -->
+    <section id="antipatterns" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">5</span>
+        Anti-Patterns
+      </h2>
+      <p class="text-slate-400 mb-8 max-w-2xl">Every pattern below actively damages opt-in rates and brand perception. Hard no on all of them.</p>
+
+      <div class="space-y-3">
+
+        <!-- Guilt Trip -->
+        <div class="antipattern-card rounded-xl border border-red-900/30 bg-red-950/20 p-5 flex items-start gap-4">
+          <div class="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-3 mb-1">
+              <p class="text-sm font-bold text-red-300">"We miss you!"</p>
+              <span class="text-[10px] font-semibold text-red-400/60 uppercase tracking-wider">Guilt Trip</span>
+            </div>
+            <p class="text-sm text-slate-400">Manipulative. Users know they haven't opened the app. Saying "we miss you" frames their absence as a failure. Creates negative association with the brand.</p>
+          </div>
+        </div>
+
+        <!-- Condescending -->
+        <div class="antipattern-card rounded-xl border border-red-900/30 bg-red-950/20 p-5 flex items-start gap-4">
+          <div class="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-3 mb-1">
+              <p class="text-sm font-bold text-red-300">"Don't forget to..."</p>
+              <span class="text-[10px] font-semibold text-red-400/60 uppercase tracking-wider">Condescending</span>
+            </div>
+            <p class="text-sm text-slate-400">Patronizing tone. Adult users don't need reminders framed as parental instructions. Replace with value: "Your session data expires in 48h" instead of "Don't forget to review your session."</p>
+          </div>
+        </div>
+
+        <!-- All Caps Spam -->
+        <div class="antipattern-card rounded-xl border border-red-900/30 bg-red-950/20 p-5 flex items-start gap-4">
+          <div class="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-3 mb-1">
+              <p class="text-sm font-bold text-red-300">"EXCITING NEWS!"</p>
+              <span class="text-[10px] font-semibold text-red-400/60 uppercase tracking-wider">All Caps Spam</span>
+            </div>
+            <p class="text-sm text-slate-400">Reads as spam. All caps in push notifications triggers the same mental filter as promotional email. If the news is exciting, the content will show it &mdash; the formatting doesn't need to scream.</p>
+          </div>
+        </div>
+
+        <!-- Emoji -->
+        <div class="antipattern-card rounded-xl border border-red-900/30 bg-red-950/20 p-5 flex items-start gap-4">
+          <div class="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-3 mb-1">
+              <p class="text-sm font-bold text-red-300">Emoji in fitness apps</p>
+              <span class="text-[10px] font-semibold text-red-400/60 uppercase tracking-wider">-4% CTR</span>
+            </div>
+            <p class="text-sm text-slate-400">Data shows -4% CTR for emoji in sports/fitness push. Emoji reads as casual/playful &mdash; wrong register for performance-oriented users. Rapsodo's audience skews competitive and data-driven.</p>
+          </div>
+        </div>
+
+        <!-- First Name -->
+        <div class="antipattern-card rounded-xl border border-red-900/30 bg-red-950/20 p-5 flex items-start gap-4">
+          <div class="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-3 mb-1">
+              <p class="text-sm font-bold text-red-300">First name in push</p>
+              <span class="text-[10px] font-semibold text-red-400/60 uppercase tracking-wider">Redundant</span>
+            </div>
+            <p class="text-sm text-slate-400">A phone is already personal. "Hey Joe, your session..." wastes 10 characters on information that adds zero value. The notification is already on their phone &mdash; they know it's for them.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ SECTION 6: DEEP LINKS ============ -->
+    <section id="deeplinks" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">6</span>
+        Deep Links
+      </h2>
+      <p class="text-slate-400 mb-8 max-w-2xl">Every push must deep link to a specific screen. Opening to the home screen wastes the tap and trains users to ignore future pushes.</p>
+
+      <div class="rounded-xl border border-slate-800 bg-slate-900/50 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-800">
+              <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3">Deep Link</th>
+              <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3">Screen</th>
+              <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3">Use Case</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/50">
+            <tr>
+              <td class="px-5 py-3"><code class="text-xs bg-slate-800 text-rapsodo px-2 py-0.5 rounded font-mono">rapsodo://practice</code></td>
+              <td class="px-5 py-3 text-slate-300">Practice Mode</td>
+              <td class="px-5 py-3 text-slate-400">Re-engagement, dormancy nudge</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3"><code class="text-xs bg-slate-800 text-rapsodo px-2 py-0.5 rounded font-mono">rapsodo://session-review</code></td>
+              <td class="px-5 py-3 text-slate-300">Session Review</td>
+              <td class="px-5 py-3 text-slate-400">Post-session data hook</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3"><code class="text-xs bg-slate-800 text-rapsodo px-2 py-0.5 rounded font-mono">rapsodo://session-insights</code></td>
+              <td class="px-5 py-3 text-slate-300">Session Insights</td>
+              <td class="px-5 py-3 text-slate-400">Detailed analysis, feature discovery</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3"><code class="text-xs bg-slate-800 text-rapsodo px-2 py-0.5 rounded font-mono">rapsodo://courses</code></td>
+              <td class="px-5 py-3 text-slate-300">Courses</td>
+              <td class="px-5 py-3 text-slate-400">Learning content, onboarding</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3"><code class="text-xs bg-slate-800 text-rapsodo px-2 py-0.5 rounded font-mono">rapsodo://target-mode</code></td>
+              <td class="px-5 py-3 text-slate-300">Target Mode</td>
+              <td class="px-5 py-3 text-slate-400">Feature adoption, social proof</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3"><code class="text-xs bg-slate-800 text-rapsodo px-2 py-0.5 rounded font-mono">rapsodo://combine</code></td>
+              <td class="px-5 py-3 text-slate-300">Combine</td>
+              <td class="px-5 py-3 text-slate-400">Competitive challenge, milestone</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3"><code class="text-xs bg-slate-800 text-rapsodo px-2 py-0.5 rounded font-mono">rapsodo://stats</code></td>
+              <td class="px-5 py-3 text-slate-300">Stats Dashboard</td>
+              <td class="px-5 py-3 text-slate-400">Progress recap, weekly summary</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3"><code class="text-xs bg-slate-800 text-rapsodo px-2 py-0.5 rounded font-mono">rapsodo://export-video</code></td>
+              <td class="px-5 py-3 text-slate-300">Export Video</td>
+              <td class="px-5 py-3 text-slate-400">Swing video sharing, social</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3"><code class="text-xs bg-slate-800 text-rapsodo px-2 py-0.5 rounded font-mono">rapsodo://subscription</code></td>
+              <td class="px-5 py-3 text-slate-300">Subscription</td>
+              <td class="px-5 py-3 text-slate-400">Trial expiry, upgrade prompt</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3"><code class="text-xs bg-slate-800 text-rapsodo px-2 py-0.5 rounded font-mono">rapsodo://my-bag</code></td>
+              <td class="px-5 py-3 text-slate-300">My Bag</td>
+              <td class="px-5 py-3 text-slate-400">Equipment setup, onboarding</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-6 rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+        <p class="text-sm text-slate-400"><span class="text-white font-semibold">Implementation:</span> Set the deep link in Iterable's push template via the <code class="text-xs bg-slate-800 text-rapsodo px-1.5 py-0.5 rounded font-mono">Open URL</code> action. The app's URL scheme handler must be registered for <code class="text-xs bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded font-mono">rapsodo://</code> on both platforms.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 7: TIMING STRATEGY ============ -->
+    <section id="timing" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">7</span>
+        Timing Strategy
+      </h2>
+      <p class="text-slate-400 mb-8 max-w-2xl">When a notification arrives matters as much as what it says. All times in the user's local timezone.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+
+        <!-- Post-session -->
+        <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-2 h-2 rounded-full bg-green-400"></div>
+            <h3 class="text-sm font-bold text-white">Post-Session</h3>
+          </div>
+          <p class="text-2xl font-bold text-white mb-1">Within 2h</p>
+          <p class="text-sm text-slate-400">Triggered by session end event. "Your Session Review is ready." Highest CTR window &mdash; user still has context from their practice.</p>
+          <div class="mt-3 rounded-lg bg-slate-950/60 border border-slate-800 px-3 py-2">
+            <p class="text-xs text-slate-500">Trigger: <code class="text-rapsodo">sessionComplete</code></p>
+          </div>
+        </div>
+
+        <!-- Dormancy -->
+        <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-2 h-2 rounded-full bg-yellow-400"></div>
+            <h3 class="text-sm font-bold text-white">Dormancy Re-engagement</h3>
+          </div>
+          <p class="text-2xl font-bold text-white mb-1">6&ndash;8 PM local</p>
+          <p class="text-sm text-slate-400">Evening practice window. User is off work, thinking about range time. Send after 7+ days of inactivity.</p>
+          <div class="mt-3 rounded-lg bg-slate-950/60 border border-slate-800 px-3 py-2">
+            <p class="text-xs text-slate-500">Trigger: <code class="text-rapsodo">daysSinceLastSession &ge; 7</code></p>
+          </div>
+        </div>
+
+        <!-- Weekend -->
+        <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-2 h-2 rounded-full bg-blue-400"></div>
+            <h3 class="text-sm font-bold text-white">Weekend Nudge</h3>
+          </div>
+          <p class="text-2xl font-bold text-white mb-1">Sat 8&ndash;10 AM</p>
+          <p class="text-sm text-slate-400">Saturday morning before the range fills up. Golfers plan their weekend practice early. Context pattern works well here.</p>
+          <div class="mt-3 rounded-lg bg-slate-950/60 border border-slate-800 px-3 py-2">
+            <p class="text-xs text-slate-500">Trigger: scheduled + <code class="text-rapsodo">dayOfWeek = Saturday</code></p>
+          </div>
+        </div>
+
+        <!-- Frequency cap -->
+        <div class="rounded-xl border border-rapsodo/30 bg-rapsodo/5 p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-2 h-2 rounded-full bg-rapsodo"></div>
+            <h3 class="text-sm font-bold text-white">Frequency Cap</h3>
+          </div>
+          <p class="text-2xl font-bold text-rapsodo mb-1">Max 1/week</p>
+          <p class="text-sm text-slate-400">Hard lifecycle cap. Post-session triggers are exempt (user-initiated context), but scheduled/dormancy sends must not exceed one per week per user.</p>
+          <div class="mt-3 rounded-lg bg-slate-950/60 border border-slate-800 px-3 py-2">
+            <p class="text-xs text-slate-500">Iterable: set frequency capping in campaign settings</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Timeline visual -->
+      <div class="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Weekly Push Timeline</p>
+        <div class="flex items-center gap-1 text-xs overflow-x-auto pb-2">
+          <div class="flex-shrink-0 w-16 text-center">
+            <div class="h-8 rounded bg-slate-800 flex items-center justify-center text-slate-500">Mon</div>
+          </div>
+          <div class="flex-shrink-0 w-16 text-center">
+            <div class="h-8 rounded bg-slate-800 flex items-center justify-center text-slate-500">Tue</div>
+          </div>
+          <div class="flex-shrink-0 w-16 text-center">
+            <div class="h-8 rounded bg-slate-800 flex items-center justify-center text-slate-500">Wed</div>
+          </div>
+          <div class="flex-shrink-0 w-16 text-center">
+            <div class="h-8 rounded bg-yellow-500/20 border border-yellow-500/30 flex items-center justify-center text-yellow-400 font-medium">Thu</div>
+            <p class="text-[10px] text-yellow-400/60 mt-1">dormancy</p>
+          </div>
+          <div class="flex-shrink-0 w-16 text-center">
+            <div class="h-8 rounded bg-slate-800 flex items-center justify-center text-slate-500">Fri</div>
+          </div>
+          <div class="flex-shrink-0 w-16 text-center">
+            <div class="h-8 rounded bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 font-medium">Sat</div>
+            <p class="text-[10px] text-blue-400/60 mt-1">weekend</p>
+          </div>
+          <div class="flex-shrink-0 w-16 text-center">
+            <div class="h-8 rounded bg-slate-800 flex items-center justify-center text-slate-500">Sun</div>
+          </div>
+          <div class="flex-shrink-0 ml-3 px-3 py-1 rounded bg-green-500/15 border border-green-500/25">
+            <p class="text-green-400 font-medium">+ post-session</p>
+            <p class="text-[10px] text-green-400/60">anytime (exempt)</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 8: ITERABLE IMPLEMENTATION ============ -->
+    <section id="iterable" class="mb-20 scroll-mt-8">
+      <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        <span class="w-8 h-8 rounded-lg bg-rapsodo/20 flex items-center justify-center text-rapsodo text-sm font-bold">8</span>
+        Iterable Implementation Notes
+      </h2>
+      <p class="text-slate-400 mb-8 max-w-2xl">Template fields and configuration for push campaigns in Iterable.</p>
+
+      <div class="rounded-xl border border-slate-800 bg-slate-900/50 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-800">
+              <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3 w-44">Field</th>
+              <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3">Type</th>
+              <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-5 py-3">Notes</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/50">
+            <tr>
+              <td class="px-5 py-3 text-white font-medium">title</td>
+              <td class="px-5 py-3"><code class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">string</code></td>
+              <td class="px-5 py-3 text-slate-400">Notification title. Supports Handlebars: <code class="text-xs text-rapsodo font-mono">{{shotCount}}</code></td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-white font-medium">body</td>
+              <td class="px-5 py-3"><code class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">string</code></td>
+              <td class="px-5 py-3 text-slate-400">Notification body. Handlebars supported. Write for Android collapsed (50 chars).</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-white font-medium">deepLink</td>
+              <td class="px-5 py-3"><code class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">URL</code></td>
+              <td class="px-5 py-3 text-slate-400">Set via <span class="text-white font-medium">Open URL</span> action. Use <code class="text-xs text-rapsodo font-mono">rapsodo://</code> scheme.</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-white font-medium">sound</td>
+              <td class="px-5 py-3"><code class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">string</code></td>
+              <td class="px-5 py-3 text-slate-400">Use <code class="text-xs text-slate-300 font-mono">default</code>. Custom sounds require app bundle inclusion.</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-white font-medium">badge</td>
+              <td class="px-5 py-3"><code class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">integer</code></td>
+              <td class="px-5 py-3 text-slate-400">iOS only. Sets app icon badge number. Use <code class="text-xs text-slate-300 font-mono">1</code> for unread, reset on open.</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-white font-medium">richMedia URL</td>
+              <td class="px-5 py-3"><code class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">URL</code></td>
+              <td class="px-5 py-3 text-slate-400">Image/GIF shown in expanded notification. iOS: Notification Service Extension required. Max 10MB.</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-white font-medium">actionButtons</td>
+              <td class="px-5 py-3"><code class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">array</code></td>
+              <td class="px-5 py-3 text-slate-400">Up to 3 buttons (iOS) / 3 buttons (Android). Each has title + action (open URL or dismiss).</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-3 text-white font-medium">customPayload</td>
+              <td class="px-5 py-3"><code class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">JSON</code></td>
+              <td class="px-5 py-3 text-slate-400">Arbitrary key-value pairs passed to the app. Use for analytics tracking, A/B variant IDs, feature flags.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Template example -->
+      <div class="mt-6 rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Example Template Payload</p>
+        <pre class="text-sm text-slate-300 font-mono leading-relaxed overflow-x-auto"><code>{
+  "title": "Your Session Review is ready",
+  "body": "{{shotCount}} shots analyzed — see your breakdown",
+  "sound": "default",
+  "badge": 1,
+  "deepLink": "rapsodo://session-review",
+  "customPayload": {
+    "campaign": "post_session_review",
+    "variant": "data_hook_v1"
+  }
+}</code></pre>
+      </div>
+
+      <!-- Handlebars note -->
+      <div class="mt-4 rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+        <p class="text-sm text-slate-400"><span class="text-white font-semibold">Handlebars variables:</span> Iterable supports user profile fields and event data in push templates. Common variables for Rapsodo: <code class="text-xs text-rapsodo font-mono">{{shotCount}}</code>, <code class="text-xs text-rapsodo font-mono">{{sessionCount}}</code>, <code class="text-xs text-rapsodo font-mono">{{streakDays}}</code>, <code class="text-xs text-rapsodo font-mono">{{lastSessionDate}}</code>, <code class="text-xs text-rapsodo font-mono">{{totalShots}}</code>. Always set fallback values with <code class="text-xs text-slate-300 font-mono">{{default shotCount "your"}}</code> syntax.</p>
+      </div>
+
+      <!-- Frequency capping -->
+      <div class="mt-4 rounded-xl border border-rapsodo/20 bg-rapsodo/5 p-5">
+        <p class="text-sm text-slate-400"><span class="text-rapsodo font-semibold">Frequency capping:</span> Set at the campaign level in Iterable under <span class="text-white">Sending &gt; Frequency Capping</span>. Configure "max 1 push per 7 days" for lifecycle campaigns. Post-session triggered campaigns should be excluded from frequency capping (set to "no limit") since they are user-initiated context.</p>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 pt-8 pb-12">
+      <div class="flex items-center justify-between text-xs text-slate-600">
+        <p>CSPod &middot; Push Design Reference &middot; 2026</p>
+        <p><a href="inapp-design-guide.html" class="text-slate-500 hover:text-slate-300 transition-colors">In-App Design Guide &rarr;</a></p>
+      </div>
+    </footer>
+
+  </div>
+</main>
+
+<!-- Sidebar scroll spy -->
+<script>
+  const sections = document.querySelectorAll('section[id]');
+  const tocLinks = document.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(link => link.classList.remove('active'));
+        const id = entry.target.getAttribute('id');
+        const activeLink = document.querySelector(`.toc-link[href="#${id}"]`);
+        if (activeLink) activeLink.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -60% 0px' });
+  sections.forEach(section => observer.observe(section));
+</script>
+
+</body>
+</html>

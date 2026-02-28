@@ -1,0 +1,2388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Practice Habit Builder — Iterable Wiring Guide</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        email: { light: '#60a5fa', DEFAULT: '#2563eb', dark: '#1e40af', bg: 'rgba(37,99,235,0.08)', border: 'rgba(37,99,235,0.25)' },
+        push: { light: '#c084fc', DEFAULT: '#a855f7', dark: '#7c3aed', bg: 'rgba(168,85,247,0.08)', border: 'rgba(168,85,247,0.25)' },
+        inapp: { light: '#34d399', DEFAULT: '#10b981', dark: '#059669', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.25)' },
+        sms: { light: '#fbbf24', DEFAULT: '#f59e0b', dark: '#d97706', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.25)' },
+      }
+    }
+  }
+}
+</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+  body { font-family: 'Inter', sans-serif; }
+  code, .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* Collapsible sections */
+  .collapsible-toggle { cursor: pointer; user-select: none; }
+  .collapsible-toggle:hover { opacity: 0.85; }
+  .collapsible-content { overflow: hidden; transition: max-height 0.3s ease-out; }
+  .collapsible-content.collapsed { max-height: 0 !important; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: #0f172a; }
+  ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+  /* Channel badges */
+  .badge-email { background: rgba(37,99,235,0.15); color: #60a5fa; border: 1px solid rgba(37,99,235,0.3); }
+  .badge-push { background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); }
+  .badge-inapp { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+  .badge-sms { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+
+  /* Touchpoint cards */
+  .tp-email { border-left: 3px solid #2563eb; background: rgba(37,99,235,0.05); }
+  .tp-push { border-left: 3px solid #a855f7; background: rgba(168,85,247,0.05); }
+  .tp-inapp { border-left: 3px solid #10b981; background: rgba(16,185,129,0.05); }
+
+  /* Decision node */
+  .decision-node { background: rgba(250,204,21,0.08); border: 1px dashed rgba(250,204,21,0.4); }
+
+  /* Journey flow connectors */
+  .flow-line { border-left: 2px solid #334155; }
+  .flow-dot { width: 10px; height: 10px; border-radius: 50%; position: absolute; left: -6px; top: 6px; }
+
+  /* TOC */
+  .toc-link { transition: all 0.15s; }
+  .toc-link:hover { color: #60a5fa; padding-left: 4px; }
+
+  /* Canvas node shapes */
+  .canvas-send { border-radius: 8px; }
+  .canvas-wait { border-radius: 8px; border-style: dashed; }
+  .canvas-decision { transform: rotate(0deg); border-radius: 4px; }
+  .canvas-exit { border-radius: 50%; }
+
+  /* Checkbox styling */
+  .checklist-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(51,65,85,0.3); }
+  .checklist-item:last-child { border-bottom: none; }
+  .check-box { flex-shrink: 0; width: 18px; height: 18px; border: 2px solid #475569; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .check-box:hover { border-color: #60a5fa; }
+  .check-box.checked { background: #2563eb; border-color: #2563eb; }
+  .check-box.checked::after { content: '\2713'; color: white; font-size: 12px; font-weight: 700; }
+  .checklist-item.checked-item .check-text { text-decoration: line-through; opacity: 0.5; }
+
+  /* Print styles */
+  @media print {
+    body { background: white !important; color: black !important; }
+    .no-print { display: none !important; }
+  }
+</style>
+</head>
+<body class="bg-slate-950 text-slate-300 min-h-screen">
+
+<!-- HEADER -->
+<header class="bg-slate-900/80 border-b border-slate-800 sticky top-0 z-50 backdrop-blur-sm">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div>
+      <h1 class="text-xl font-bold text-white tracking-tight">Weekly Practice Habit Builder</h1>
+      <p class="text-xs text-slate-500 mt-0.5">Iterable Wiring Guide &mdash; 24 touchpoints across 8 weeks</p>
+    </div>
+    <div class="flex items-center gap-3 text-xs">
+      <span class="badge-email px-2 py-1 rounded font-mono font-medium">Email: 81836</span>
+      <span class="badge-push px-2 py-1 rounded font-mono font-medium">Push: 133028</span>
+      <span class="badge-inapp px-2 py-1 rounded font-mono font-medium">InApp: 133085</span>
+      <span class="badge-sms px-2 py-1 rounded font-mono font-medium">SMS: 84373</span>
+    </div>
+  </div>
+</header>
+
+<div class="max-w-7xl mx-auto px-6 py-8">
+
+<!-- TABLE OF CONTENTS -->
+<nav class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 mb-10">
+  <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Table of Contents</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-1 text-sm">
+    <a href="#overview" class="toc-link text-slate-400 hover:text-blue-400 py-1">1. Overview</a>
+    <a href="#templates" class="toc-link text-slate-400 hover:text-blue-400 py-1">2. Templates to Create (24)</a>
+    <a href="#campaigns" class="toc-link text-slate-400 hover:text-blue-400 py-1">3. Campaigns to Create (24)</a>
+    <a href="#canvas" class="toc-link text-slate-400 hover:text-blue-400 py-1">4. Journey Canvas Build</a>
+    <a href="#testing" class="toc-link text-slate-400 hover:text-blue-400 py-1">5. Testing Checklist</a>
+    <a href="#reference" class="toc-link text-slate-400 hover:text-blue-400 py-1">6. Quick Reference</a>
+  </div>
+</nav>
+
+<!-- ============================================================ -->
+<!-- SECTION 1: OVERVIEW -->
+<!-- ============================================================ -->
+<section id="overview" class="mb-16">
+  <div class="collapsible-toggle flex items-center gap-3 mb-6" onclick="toggleSection('overview-content')">
+    <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 font-bold text-sm">1</div>
+    <h2 class="text-2xl font-bold text-white">Overview</h2>
+    <svg id="overview-content-chevron" class="w-5 h-5 text-slate-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+  </div>
+
+  <div id="overview-content" class="collapsible-content" style="max-height: 5000px;">
+
+    <!-- Journey metadata -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <div class="bg-slate-900/60 border border-slate-800 rounded-lg p-5">
+        <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Journey Details</h3>
+        <dl class="space-y-2 text-sm">
+          <div class="flex justify-between"><dt class="text-slate-500">Name</dt><dd class="text-white font-medium">Weekly Practice Habit Builder</dd></div>
+          <div class="flex justify-between"><dt class="text-slate-500">Duration</dt><dd class="text-white font-medium">8 weeks (56 days)</dd></div>
+          <div class="flex justify-between"><dt class="text-slate-500">Touchpoints</dt><dd class="text-white font-medium">24 total</dd></div>
+          <div class="flex justify-between"><dt class="text-slate-500">Folder</dt><dd class="text-white font-mono text-xs">Journey Builder (1340586)</dd></div>
+        </dl>
+      </div>
+      <div class="bg-slate-900/60 border border-slate-800 rounded-lg p-5">
+        <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Channel Mix</h3>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm bg-blue-500"></span><span class="text-sm text-white font-medium">10 Emails</span></div>
+          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm bg-purple-500"></span><span class="text-sm text-white font-medium">8 Push</span></div>
+          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm bg-emerald-500"></span><span class="text-sm text-white font-medium">4 In-App</span></div>
+          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm bg-amber-500"></span><span class="text-sm text-white font-medium">2 Decision Splits</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Audience, Goal, Entry, Exit -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <div class="bg-slate-900/60 border border-slate-800 rounded-lg p-5">
+        <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Audience &amp; Entry</h3>
+        <dl class="space-y-3 text-sm">
+          <div>
+            <dt class="text-slate-500 text-xs">Audience</dt>
+            <dd class="text-white">Active paid subscribers with 1+ session in the last 14 days</dd>
+          </div>
+          <div>
+            <dt class="text-slate-500 text-xs">Entry Trigger</dt>
+            <dd class="text-white">List membership: <span class="mono text-xs text-blue-400">"Active Paid &mdash; 1+ session in 14 days"</span></dd>
+          </div>
+          <div>
+            <dt class="text-slate-500 text-xs">Goal</dt>
+            <dd class="text-white">Build a weekly practice habit through progressive feature discovery. Move users from occasional to consistent, then from basic to advanced features.</dd>
+          </div>
+        </dl>
+      </div>
+      <div class="bg-slate-900/60 border border-slate-800 rounded-lg p-5">
+        <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Exit Conditions</h3>
+        <div class="space-y-3">
+          <div class="flex items-start gap-3 p-3 bg-red-500/5 border border-red-500/20 rounded-lg">
+            <span class="text-red-400 text-lg mt-0.5">&#x2717;</span>
+            <div>
+              <div class="text-sm text-white font-medium">14+ days no login</div>
+              <div class="text-xs text-slate-500">Move user to At-Risk journey</div>
+            </div>
+          </div>
+          <div class="flex items-start gap-3 p-3 bg-red-500/5 border border-red-500/20 rounded-lg">
+            <span class="text-red-400 text-lg mt-0.5">&#x2717;</span>
+            <div>
+              <div class="text-sm text-white font-medium">Subscription cancelled</div>
+              <div class="text-xs text-slate-500">Exit journey immediately</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JOURNEY MAP FLOWCHART -->
+    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 mb-8 overflow-x-auto">
+      <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-5">8-Week Journey Map</h3>
+
+      <div class="min-w-[1100px] relative">
+        <!-- Week labels row -->
+        <div class="flex gap-1 mb-2">
+          <div class="w-[130px] text-center text-xs font-bold text-slate-500">WEEK 1</div>
+          <div class="w-[130px] text-center text-xs font-bold text-slate-500">WEEK 2</div>
+          <div class="w-[130px] text-center text-xs font-bold text-slate-500">WEEK 3</div>
+          <div class="w-[130px] text-center text-xs font-bold text-slate-500">WEEK 4</div>
+          <div class="w-[130px] text-center text-xs font-bold text-slate-500">WEEK 5</div>
+          <div class="w-[130px] text-center text-xs font-bold text-slate-500">WEEK 6</div>
+          <div class="w-[130px] text-center text-xs font-bold text-slate-500">WEEK 7</div>
+          <div class="w-[130px] text-center text-xs font-bold text-slate-500">WEEK 8</div>
+        </div>
+
+        <!-- Day labels row -->
+        <div class="flex gap-1 mb-3">
+          <div class="w-[130px] text-center text-[10px] text-slate-600">D0 &ndash; D6</div>
+          <div class="w-[130px] text-center text-[10px] text-slate-600">D7 &ndash; D13</div>
+          <div class="w-[130px] text-center text-[10px] text-slate-600">D14 &ndash; D20</div>
+          <div class="w-[130px] text-center text-[10px] text-slate-600">D21 &ndash; D27</div>
+          <div class="w-[130px] text-center text-[10px] text-slate-600">D28 &ndash; D34</div>
+          <div class="w-[130px] text-center text-[10px] text-slate-600">D35 &ndash; D41</div>
+          <div class="w-[130px] text-center text-[10px] text-slate-600">D42 &ndash; D48</div>
+          <div class="w-[130px] text-center text-[10px] text-slate-600">D49 &ndash; D56</div>
+        </div>
+
+        <!-- Email row -->
+        <div class="flex items-center gap-1 mb-2">
+          <div class="w-[130px] flex flex-col items-center gap-1">
+            <div class="w-full bg-blue-500/15 border border-blue-500/30 rounded px-1 py-1 text-[9px] text-blue-400 text-center font-medium">#1 D0 Anchor</div>
+            <div class="w-full bg-blue-500/15 border border-blue-500/30 rounded px-1 py-1 text-[9px] text-blue-400 text-center font-medium">#3 D6 Reinforce<span class="text-emerald-400">*</span></div>
+          </div>
+          <div class="w-[130px] flex flex-col items-center gap-1">
+            <div class="w-full bg-blue-500/15 border border-blue-500/30 rounded px-1 py-1 text-[9px] text-blue-400 text-center font-medium">#5 D7 Anchor</div>
+            <div class="w-full bg-blue-500/15 border border-blue-500/30 rounded px-1 py-1 text-[9px] text-blue-400 text-center font-medium">#8 D13 Reinforce</div>
+          </div>
+          <div class="w-[130px] flex flex-col items-center gap-1">
+            <div class="w-full bg-blue-500/15 border border-blue-500/30 rounded px-1 py-1 text-[9px] text-blue-400 text-center font-medium">#9 D14 Anchor</div>
+          </div>
+          <div class="w-[130px] flex flex-col items-center gap-1">
+            <div class="w-full bg-blue-500/15 border border-blue-500/30 rounded px-1 py-1 text-[9px] text-blue-400 text-center font-medium">#12 D21 Anchor</div>
+            <div class="w-full bg-blue-500/15 border border-blue-500/30 rounded px-1 py-1 text-[9px] text-blue-400 text-center font-medium">#15 D27 Reinforce<span class="text-emerald-400">*</span></div>
+          </div>
+          <div class="w-[130px] flex flex-col items-center gap-1">
+            <div class="w-full bg-blue-500/15 border border-blue-500/30 rounded px-1 py-1 text-[9px] text-blue-400 text-center font-medium">#16 D28 Anchor</div>
+          </div>
+          <div class="w-[130px] flex flex-col items-center gap-1">
+            <div class="w-full bg-blue-500/15 border border-blue-500/30 rounded px-1 py-1 text-[9px] text-blue-400 text-center font-medium">#18 D35 Anchor</div>
+          </div>
+          <div class="w-[130px] flex flex-col items-center gap-1">
+            <div class="w-full bg-blue-500/15 border border-blue-500/30 rounded px-1 py-1 text-[9px] text-blue-400 text-center font-medium">#21 D42 Anchor</div>
+          </div>
+          <div class="w-[130px] flex flex-col items-center gap-1">
+            <div class="w-full bg-blue-500/15 border border-blue-500/30 rounded px-1 py-1 text-[9px] text-blue-400 text-center font-medium">#23 D49 Anchor</div>
+          </div>
+        </div>
+
+        <!-- Push row -->
+        <div class="flex items-center gap-1 mb-2">
+          <div class="w-[130px] flex flex-col items-center gap-1">
+            <div class="w-full bg-purple-500/15 border border-purple-500/30 rounded px-1 py-1 text-[9px] text-purple-400 text-center font-medium">#2 D3 Nudge<span class="text-emerald-400">*</span></div>
+            <div class="w-full bg-purple-500/15 border border-purple-500/30 rounded px-1 py-1 text-[9px] text-purple-400 text-center font-medium">#4 D6 Dormant<span class="text-emerald-400">*</span></div>
+          </div>
+          <div class="w-[130px] flex flex-col items-center gap-1">
+            <div class="w-full bg-purple-500/15 border border-purple-500/30 rounded px-1 py-1 text-[9px] text-purple-400 text-center font-medium">#7 D10 Nudge<span class="text-emerald-400">*</span></div>
+          </div>
+          <div class="w-[130px] flex flex-col items-center gap-1">
+            <div class="w-full bg-purple-500/15 border border-purple-500/30 rounded px-1 py-1 text-[9px] text-purple-400 text-center font-medium">#10 D17 Nudge<span class="text-emerald-400">*</span></div>
+          </div>
+          <div class="w-[130px] flex flex-col items-center gap-1">
+            <div class="w-full bg-purple-500/15 border border-purple-500/30 rounded px-1 py-1 text-[9px] text-purple-400 text-center font-medium">#14 D24 Nudge<span class="text-emerald-400">*</span></div>
+          </div>
+          <div class="w-[130px] flex flex-col items-center gap-1">
+            <div class="w-full bg-purple-500/15 border border-purple-500/30 rounded px-1 py-1 text-[9px] text-purple-400 text-center font-medium">#17 D31 Nudge<span class="text-emerald-400">*</span></div>
+          </div>
+          <div class="w-[130px] flex flex-col items-center gap-1">
+            <div class="w-full bg-purple-500/15 border border-purple-500/30 rounded px-1 py-1 text-[9px] text-purple-400 text-center font-medium">#20 D38 Nudge<span class="text-emerald-400">*</span></div>
+          </div>
+          <div class="w-[130px] flex flex-col items-center gap-1">
+            <div class="w-full bg-purple-500/15 border border-purple-500/30 rounded px-1 py-1 text-[9px] text-purple-400 text-center font-medium">#22 D45 Nudge<span class="text-emerald-400">*</span></div>
+          </div>
+          <div class="w-[130px] flex flex-col items-center gap-1">
+            <div class="w-full bg-purple-500/15 border border-purple-500/30 rounded px-1 py-1 text-[9px] text-purple-400 text-center font-medium">#24 D56 Complete</div>
+          </div>
+        </div>
+
+        <!-- InApp row -->
+        <div class="flex items-center gap-1 mb-4">
+          <div class="w-[130px]"></div>
+          <div class="w-[130px] flex flex-col items-center gap-1">
+            <div class="w-full bg-emerald-500/15 border border-emerald-500/30 rounded px-1 py-1 text-[9px] text-emerald-400 text-center font-medium">#6 D8 Review<span class="text-emerald-400">*</span></div>
+          </div>
+          <div class="w-[130px] flex flex-col items-center gap-1">
+            <div class="w-full bg-emerald-500/15 border border-emerald-500/30 rounded px-1 py-1 text-[9px] text-emerald-400 text-center font-medium">#11 D20 Metric</div>
+          </div>
+          <div class="w-[130px] flex flex-col items-center gap-1">
+            <div class="w-full bg-emerald-500/15 border border-emerald-500/30 rounded px-1 py-1 text-[9px] text-emerald-400 text-center font-medium">#13 D22 Insights<span class="text-emerald-400">*</span></div>
+          </div>
+          <div class="w-[130px]"></div>
+          <div class="w-[130px] flex flex-col items-center gap-1">
+            <div class="w-full bg-emerald-500/15 border border-emerald-500/30 rounded px-1 py-1 text-[9px] text-emerald-400 text-center font-medium">#19 D37 Courses<span class="text-emerald-400">*</span></div>
+          </div>
+          <div class="w-[130px]"></div>
+          <div class="w-[130px]"></div>
+        </div>
+
+        <!-- Legend -->
+        <div class="flex items-center gap-6 text-[10px] text-slate-500 border-t border-slate-800 pt-3">
+          <span><span class="text-emerald-400">*</span> = conditional send (has decision logic)</span>
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-blue-500/40"></span> Email</span>
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-purple-500/40"></span> Push</span>
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-emerald-500/40"></span> In-App</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DECISION SPLIT DIAGRAM -->
+    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
+      <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-5">Decision Splits</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Day 6 Split -->
+        <div class="bg-slate-950/50 border border-slate-700/50 rounded-lg p-4">
+          <div class="text-xs font-bold text-amber-400 mb-3">Day 6: Session Activity Check</div>
+          <pre class="text-[11px] text-slate-400 leading-relaxed mono"><span class="text-slate-500">         ┌──────────────────────────┐</span>
+<span class="text-slate-500">         │</span>  <span class="text-amber-400">mlm2numSessions changed</span>  <span class="text-slate-500">│</span>
+<span class="text-slate-500">         │</span>  <span class="text-amber-400">since journey entry?</span>     <span class="text-slate-500">│</span>
+<span class="text-slate-500">         └────────┬────────┬────────┘</span>
+<span class="text-emerald-400">            YES</span>  <span class="text-slate-500">│        │</span>  <span class="text-red-400">NO</span>
+<span class="text-slate-500">     ┌───────────┘        └──────────┐</span>
+<span class="text-slate-500">     │</span>                                 <span class="text-slate-500">│</span>
+<span class="text-blue-400">  #3 Email</span>                        <span class="text-purple-400">#4 Push</span>
+<span class="text-blue-400">  Reinforcement</span>                   <span class="text-purple-400">Dormant Nudge</span>
+<span class="text-blue-400">  "you hit X shots"</span>               <span class="text-purple-400">"week got away"</span></pre>
+        </div>
+
+        <!-- Day 27 Split -->
+        <div class="bg-slate-950/50 border border-slate-700/50 rounded-lg p-4">
+          <div class="text-xs font-bold text-amber-400 mb-3">Day 27: Session Insights Check</div>
+          <pre class="text-[11px] text-slate-400 leading-relaxed mono"><span class="text-slate-500">         ┌──────────────────────────┐</span>
+<span class="text-slate-500">         │</span>  <span class="text-amber-400">View Session Insights</span>    <span class="text-slate-500">│</span>
+<span class="text-slate-500">         │</span>  <span class="text-amber-400">event count > 0?</span>         <span class="text-slate-500">│</span>
+<span class="text-slate-500">         └────────┬────────┬────────┘</span>
+<span class="text-emerald-400">            YES</span>  <span class="text-slate-500">│        │</span>  <span class="text-red-400">NO</span>
+<span class="text-slate-500">     ┌───────────┘        └──────────┐</span>
+<span class="text-slate-500">     │</span>                                 <span class="text-slate-500">│</span>
+<span class="text-blue-400">  #15 Email</span>                       <span class="text-slate-600">(skip)</span>
+<span class="text-blue-400">  Insights Value</span>
+<span class="text-blue-400">  "trends you spotted"</span></pre>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 2: TEMPLATES TO CREATE -->
+<!-- ============================================================ -->
+<section id="templates" class="mb-16">
+  <div class="collapsible-toggle flex items-center gap-3 mb-6" onclick="toggleSection('templates-content')">
+    <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 font-bold text-sm">2</div>
+    <h2 class="text-2xl font-bold text-white">Templates to Create</h2>
+    <span class="text-xs text-slate-500 ml-2">24 templates</span>
+    <svg id="templates-content-chevron" class="w-5 h-5 text-slate-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+  </div>
+
+  <div id="templates-content" class="collapsible-content" style="max-height: 50000px;">
+
+    <div class="bg-slate-900/40 border border-slate-800/50 rounded-lg p-4 mb-6 text-sm text-slate-400">
+      <span class="text-white font-semibold">All templates:</span> Folder = <span class="mono text-xs text-blue-400">Journey Builder (1340586)</span> &nbsp;&bull;&nbsp; Naming = <span class="mono text-xs text-emerald-400">CE_W{week}_{purpose}_{channel}</span>
+    </div>
+
+    <!-- WEEK 1 -->
+    <div class="mb-8">
+      <h3 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+        <span class="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">WEEK 1</span>
+        Consistency Foundation
+      </h3>
+      <p class="text-xs text-slate-500 mb-4">Days 0-6 &mdash; Establish the practice habit</p>
+
+      <!-- #1 -->
+      <div class="tp-email rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#1</span>
+          <span class="badge-email text-xs px-2 py-0.5 rounded font-medium">EMAIL</span>
+          <span class="text-sm font-semibold text-white">CE_W1_Anchor_Email</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 0</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-blue-400">81836 (Marketing Email)</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition</div>
+            <div class="text-slate-300">On journey entry &mdash; always send</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Subject</div>
+            <div class="text-white font-medium">"the secret to better golf? showing up"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Preheader</div>
+            <div class="text-slate-300">WEEK 1 &mdash; Your practice habit starts now</div>
+          </div>
+          <div class="md:col-span-2">
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300 bg-slate-950/50 rounded p-3 text-xs leading-relaxed">
+              <p class="mb-2"><strong class="text-white">Headline:</strong> One session this week changes everything</p>
+              <p class="mb-2"><strong class="text-white">Body copy:</strong> The golfers who improve aren't the ones with the best swing. They're the ones who show up consistently. This week, your only goal: one practice session. Connect your MLM2PRO, hit some balls, and review your data. That's it.</p>
+              <p class="mb-2"><strong class="text-white">Bullets:</strong></p>
+              <ul class="list-disc list-inside ml-2 space-y-1">
+                <li>Connect your device and hit 20+ shots</li>
+                <li>Review your session data after you finish</li>
+                <li>Notice which clubs feel consistent</li>
+              </ul>
+              <p class="mt-2"><strong class="text-white">Primary CTA:</strong> "Start a Session" &rarr; deep link: <span class="mono text-blue-400">rapsodo://practice</span></p>
+              <p><strong class="text-white">Secondary CTA:</strong> "View Learning Center" &rarr; <span class="mono text-blue-400">https://rapsodo.com/pages/golf-learning-center</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- #2 -->
+      <div class="tp-push rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#2</span>
+          <span class="badge-push text-xs px-2 py-0.5 rounded font-medium">PUSH</span>
+          <span class="text-sm font-semibold text-white">CE_W1_Nudge_Push</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 3</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-purple-400">133028 (Push)</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition</div>
+            <div class="text-amber-400 text-xs">If mlm2numSessions unchanged since journey entry</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Title</div>
+            <div class="text-white font-medium">"Quick session today?"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300">15 minutes and 20 shots. That's all it takes to start seeing your data.</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Deep Link</div>
+            <div class="mono text-xs text-purple-400">rapsodo://practice</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Sound</div>
+            <div class="text-slate-300">Default</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- #3 -->
+      <div class="tp-email rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#3</span>
+          <span class="badge-email text-xs px-2 py-0.5 rounded font-medium">EMAIL</span>
+          <span class="text-sm font-semibold text-white">CE_W1_Reinforcement_Active_Email</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 6</span>
+          <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">YES branch</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-blue-400">81836 (Marketing Email)</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition (Decision Split)</div>
+            <div class="text-emerald-400 text-xs">If mlm2numSessions increased by 1+ since day 0</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Subject</div>
+            <div class="text-white font-medium">"you hit {{total_shots}} shots this week"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Preheader</div>
+            <div class="text-slate-300">Week 1 complete &mdash; here's what your data shows</div>
+          </div>
+          <div class="md:col-span-2">
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300 bg-slate-950/50 rounded p-3 text-xs leading-relaxed">
+              <p class="mb-2"><strong class="text-white">Headline:</strong> Week 1: You showed up</p>
+              <p class="mb-2"><strong class="text-white">Body copy:</strong> {{total_shots}} shots this week. That's not a number &mdash; that's data. Every shot you hit goes into your profile, and over time you'll see patterns you can't spot on the range alone. Next week we'll look at how Session Review turns those numbers into insight.</p>
+              <p><strong class="text-white">Primary CTA:</strong> "Review Your Sessions" &rarr; deep link: <span class="mono text-blue-400">rapsodo://sessions</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- #4 -->
+      <div class="tp-push rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#4</span>
+          <span class="badge-push text-xs px-2 py-0.5 rounded font-medium">PUSH</span>
+          <span class="text-sm font-semibold text-white">CE_W1_Reinforcement_Dormant_Push</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 6</span>
+          <span class="text-xs px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20">NO branch</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-purple-400">133028 (Push)</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition (Decision Split)</div>
+            <div class="text-red-400 text-xs">If mlm2numSessions unchanged since journey entry</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Title</div>
+            <div class="text-white font-medium">"This week got away from you"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300">No stress. One session this weekend resets the streak. Your MLM2PRO is ready when you are.</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Deep Link</div>
+            <div class="mono text-xs text-purple-400">rapsodo://practice</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEEK 2 -->
+    <div class="mb-8">
+      <h3 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+        <span class="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">WEEK 2</span>
+        Session Review Focus
+      </h3>
+      <p class="text-xs text-slate-500 mb-4">Days 7-13 &mdash; Introduce data review habit</p>
+
+      <!-- #5 -->
+      <div class="tp-email rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#5</span>
+          <span class="badge-email text-xs px-2 py-0.5 rounded font-medium">EMAIL</span>
+          <span class="text-sm font-semibold text-white">CE_W2_Anchor_Email</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 7</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-blue-400">81836</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition</div>
+            <div class="text-slate-300">Always send</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Subject</div>
+            <div class="text-white font-medium">"most golfers never review their data"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Preheader</div>
+            <div class="text-slate-300">WEEK 2 &mdash; The data review habit</div>
+          </div>
+          <div class="md:col-span-2">
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300 bg-slate-950/50 rounded p-3 text-xs leading-relaxed">
+              <p class="mb-2"><strong class="text-white">Headline:</strong> Your data tells a story &mdash; if you look</p>
+              <p class="mb-2"><strong class="text-white">Body copy:</strong> Most golfers hit balls, pack up, and leave. The ones who improve look at what the numbers say. After every session, tap "Session Review" to see your carry distances, ball speed, and launch angle for every shot. This week: practice, then review. Every time.</p>
+              <p class="mb-2"><strong class="text-white">Bullets:</strong></p>
+              <ul class="list-disc list-inside ml-2 space-y-1">
+                <li>Tap any session to see shot-by-shot data</li>
+                <li>Look for your most consistent club</li>
+                <li>Compare today's numbers to last week</li>
+              </ul>
+              <p class="mt-2"><strong class="text-white">Primary CTA:</strong> "Review Your Sessions" &rarr; deep link: <span class="mono text-blue-400">rapsodo://sessions</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- #6 -->
+      <div class="tp-inapp rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#6</span>
+          <span class="badge-inapp text-xs px-2 py-0.5 rounded font-medium">IN-APP</span>
+          <span class="text-sm font-semibold text-white">CE_W2_SessionReview_InApp</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 8</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-emerald-400">133085 (In-App)</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition</div>
+            <div class="text-amber-400 text-xs">On Play Session v2 completion with 20+ shots</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Display Type</div>
+            <div class="text-white font-medium">Modal (center screen)</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Trigger Event</div>
+            <div class="mono text-xs text-emerald-400">Play Session v2 (where total_shots >= 20)</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Title</div>
+            <div class="text-white font-medium">"Solid session &mdash; {{total_shots}} shots"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300">Tap to review your carry distances and see which club was most consistent today.</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Primary Button</div>
+            <div class="text-white">"Review Session" &rarr; <span class="mono text-xs text-emerald-400">rapsodo://session-review/latest</span></div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Dismiss Button</div>
+            <div class="text-slate-400">"Later"</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- #7 -->
+      <div class="tp-push rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#7</span>
+          <span class="badge-push text-xs px-2 py-0.5 rounded font-medium">PUSH</span>
+          <span class="text-sm font-semibold text-white">CE_W2_Nudge_Push</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 10</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-purple-400">133028</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition</div>
+            <div class="text-amber-400 text-xs">If last_mlm2_shot_date is 3+ days ago</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Title</div>
+            <div class="text-white font-medium">"Your weekly session awaits"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300">Keep the momentum going. A quick session this week keeps your data fresh.</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Deep Link</div>
+            <div class="mono text-xs text-purple-400">rapsodo://practice</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- #8 -->
+      <div class="tp-email rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#8</span>
+          <span class="badge-email text-xs px-2 py-0.5 rounded font-medium">EMAIL</span>
+          <span class="text-sm font-semibold text-white">CE_W2_Reinforcement_Email</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 13</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-blue-400">81836</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition</div>
+            <div class="text-slate-300">Always send</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Subject</div>
+            <div class="text-white font-medium">"you're building something here"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Preheader</div>
+            <div class="text-slate-300">Two weeks of data &mdash; patterns are forming</div>
+          </div>
+          <div class="md:col-span-2">
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300 bg-slate-950/50 rounded p-3 text-xs leading-relaxed">
+              <p class="mb-2"><strong class="text-white">Headline:</strong> Two weeks in &mdash; your data has a story</p>
+              <p class="mb-2"><strong class="text-white">Body copy:</strong> Two weeks of consistent practice builds a baseline. You now have enough data to see real patterns &mdash; which clubs are consistent, which distances are reliable, and where there's room to improve. Next week we'll dig into the metrics that matter most.</p>
+              <p><strong class="text-white">Primary CTA:</strong> "See Your Progress" &rarr; deep link: <span class="mono text-blue-400">rapsodo://sessions</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEEK 3 -->
+    <div class="mb-8">
+      <h3 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+        <span class="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">WEEK 3</span>
+        Deeper Metrics
+      </h3>
+      <p class="text-xs text-slate-500 mb-4">Days 14-20 &mdash; Focus on specific performance metrics</p>
+
+      <!-- #9 -->
+      <div class="tp-email rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#9</span>
+          <span class="badge-email text-xs px-2 py-0.5 rounded font-medium">EMAIL</span>
+          <span class="text-sm font-semibold text-white">CE_W3_Anchor_Email</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 14</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-blue-400">81836</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition</div>
+            <div class="text-slate-300">Always send</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Subject</div>
+            <div class="text-white font-medium">"let's talk about your launch angle"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Preheader</div>
+            <div class="text-slate-300">WEEK 3 &mdash; The metric that separates good from great</div>
+          </div>
+          <div class="md:col-span-2">
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300 bg-slate-950/50 rounded p-3 text-xs leading-relaxed">
+              <p class="mb-2"><strong class="text-white">Headline:</strong> Launch angle: the number that changes everything</p>
+              <p class="mb-2"><strong class="text-white">Body copy:</strong> Ball speed gets all the attention, but launch angle is the metric that separates good shots from great ones. Too high = distance loss. Too low = no carry. Your MLM2PRO tracks it on every shot. This week, pay attention to your launch angle across different clubs. You'll start seeing which clubs you hit cleanly and which ones need work.</p>
+              <p class="mb-2"><strong class="text-white">Educational section:</strong></p>
+              <ul class="list-disc list-inside ml-2 space-y-1">
+                <li>Driver: 10-15 degrees optimal</li>
+                <li>7-iron: 16-20 degrees optimal</li>
+                <li>Wedges: 24-30 degrees optimal</li>
+              </ul>
+              <p class="mt-2"><strong class="text-white">Primary CTA:</strong> "Check Your Launch Angles" &rarr; deep link: <span class="mono text-blue-400">rapsodo://sessions</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- #10 -->
+      <div class="tp-push rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#10</span>
+          <span class="badge-push text-xs px-2 py-0.5 rounded font-medium">PUSH</span>
+          <span class="text-sm font-semibold text-white">CE_W3_Nudge_Push</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 17</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-purple-400">133028</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition</div>
+            <div class="text-amber-400 text-xs">If no Play Session v2 in last 72 hours</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Title</div>
+            <div class="text-white font-medium">"Work on those launch angles?"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300">Hit 20 balls and check your launch angle for each club. See which one surprises you.</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Deep Link</div>
+            <div class="mono text-xs text-purple-400">rapsodo://practice</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- #11 -->
+      <div class="tp-inapp rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#11</span>
+          <span class="badge-inapp text-xs px-2 py-0.5 rounded font-medium">IN-APP</span>
+          <span class="text-sm font-semibold text-white">CE_W3_MetricFocus_InApp</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 20</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-emerald-400">133085</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition</div>
+            <div class="text-slate-300">On session_start</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Display Type</div>
+            <div class="text-white font-medium">Banner (top of screen)</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Trigger Event</div>
+            <div class="mono text-xs text-emerald-400">session_start</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Title</div>
+            <div class="text-white font-medium">"Today's focus: Launch angles"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300">Pay attention to your launch angle after each shot. Notice which clubs you hit cleanly.</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Dismiss</div>
+            <div class="text-slate-400">Auto-dismiss after 5 seconds or tap</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEEK 4 -->
+    <div class="mb-8">
+      <h3 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+        <span class="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">WEEK 4</span>
+        Session Insights Introduction
+      </h3>
+      <p class="text-xs text-slate-500 mb-4">Days 21-27 &mdash; Introduce trend analysis</p>
+
+      <!-- #12 -->
+      <div class="tp-email rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#12</span>
+          <span class="badge-email text-xs px-2 py-0.5 rounded font-medium">EMAIL</span>
+          <span class="text-sm font-semibold text-white">CE_W4_Anchor_Email</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 21</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-blue-400">81836</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition</div>
+            <div class="text-slate-300">Always send</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Subject</div>
+            <div class="text-white font-medium">"ready to see the bigger picture?"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Preheader</div>
+            <div class="text-slate-300">WEEK 4 &mdash; Session Insights shows your trends over time</div>
+          </div>
+          <div class="md:col-span-2">
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300 bg-slate-950/50 rounded p-3 text-xs leading-relaxed">
+              <p class="mb-2"><strong class="text-white">Headline:</strong> Individual sessions are good. Trends are better.</p>
+              <p class="mb-2"><strong class="text-white">Body copy:</strong> You've been reviewing individual sessions &mdash; that's the foundation. Now it's time to zoom out. Session Insights shows how your numbers trend across multiple sessions. Is your ball speed going up? Are your launch angles getting more consistent? Tap "Insights" after your next session to see the bigger picture.</p>
+              <p class="mb-2"><strong class="text-white">How to access:</strong></p>
+              <ul class="list-disc list-inside ml-2 space-y-1">
+                <li>Open the app &rarr; Sessions &rarr; Insights tab</li>
+                <li>View trends across your last 5, 10, or 20 sessions</li>
+                <li>Compare metrics across clubs</li>
+              </ul>
+              <p class="mt-2"><strong class="text-white">Primary CTA:</strong> "See Your Insights" &rarr; deep link: <span class="mono text-blue-400">rapsodo://session-insights</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- #13 -->
+      <div class="tp-inapp rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#13</span>
+          <span class="badge-inapp text-xs px-2 py-0.5 rounded font-medium">IN-APP</span>
+          <span class="text-sm font-semibold text-white">CE_W4_InsightsPrompt_InApp</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 22</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-emerald-400">133085</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition</div>
+            <div class="text-amber-400 text-xs">On View Session Detail event</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Display Type</div>
+            <div class="text-white font-medium">Modal (center screen)</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Trigger Event</div>
+            <div class="mono text-xs text-emerald-400">View Session Detail</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Title</div>
+            <div class="text-white font-medium">"Want the bigger picture?"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300">You're reviewing this session. Tap "Insights" to see how your numbers trend across all your sessions.</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Primary Button</div>
+            <div class="text-white">"View Insights" &rarr; <span class="mono text-xs text-emerald-400">rapsodo://session-insights</span></div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Dismiss Button</div>
+            <div class="text-slate-400">"Not Now"</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- #14 -->
+      <div class="tp-push rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#14</span>
+          <span class="badge-push text-xs px-2 py-0.5 rounded font-medium">PUSH</span>
+          <span class="text-sm font-semibold text-white">CE_W4_Nudge_InsightsFocus_Push</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 24</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-purple-400">133028</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition</div>
+            <div class="text-amber-400 text-xs">If View Session Insights event count = 0</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Title</div>
+            <div class="text-white font-medium">"You're missing your best data"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300">Session Insights shows trends across all your sessions. One tap from your session list. Worth the look.</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Deep Link</div>
+            <div class="mono text-xs text-purple-400">rapsodo://session-insights</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- #15 -->
+      <div class="tp-email rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#15</span>
+          <span class="badge-email text-xs px-2 py-0.5 rounded font-medium">EMAIL</span>
+          <span class="text-sm font-semibold text-white">CE_W4_Reinforcement_InsightsValue_Email</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 27</span>
+          <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Insights YES branch</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-blue-400">81836</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition (Decision Split)</div>
+            <div class="text-emerald-400 text-xs">If View Session Insights event count > 0</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Subject</div>
+            <div class="text-white font-medium">"those trends you spotted? that's progress"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Preheader</div>
+            <div class="text-slate-300">Four weeks of data &mdash; your trends are real</div>
+          </div>
+          <div class="md:col-span-2">
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300 bg-slate-950/50 rounded p-3 text-xs leading-relaxed">
+              <p class="mb-2"><strong class="text-white">Headline:</strong> You're looking at the right data</p>
+              <p class="mb-2"><strong class="text-white">Body copy:</strong> Most golfers don't make it this far. You're not just hitting balls &mdash; you're tracking trends. Session Insights is the feature that turns raw practice into structured improvement. Keep checking it after every few sessions. Next week: we look at smash factor and what it tells you about strike quality.</p>
+              <p><strong class="text-white">Primary CTA:</strong> "View Your Trends" &rarr; deep link: <span class="mono text-blue-400">rapsodo://session-insights</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEEK 5 -->
+    <div class="mb-8">
+      <h3 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+        <span class="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">WEEK 5</span>
+        Smash Factor Focus
+      </h3>
+      <p class="text-xs text-slate-500 mb-4">Days 28-34 &mdash; Advanced metric: strike quality</p>
+
+      <!-- #16 -->
+      <div class="tp-email rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#16</span>
+          <span class="badge-email text-xs px-2 py-0.5 rounded font-medium">EMAIL</span>
+          <span class="text-sm font-semibold text-white">CE_W5_Anchor_Email</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 28</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-blue-400">81836</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition</div>
+            <div class="text-slate-300">Always send</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Subject</div>
+            <div class="text-white font-medium">"are you leaving yards on the table?"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Preheader</div>
+            <div class="text-slate-300">WEEK 5 &mdash; Smash factor tells you if you're making clean contact</div>
+          </div>
+          <div class="md:col-span-2">
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300 bg-slate-950/50 rounded p-3 text-xs leading-relaxed">
+              <p class="mb-2"><strong class="text-white">Headline:</strong> Smash factor: the quality of your strike</p>
+              <p class="mb-2"><strong class="text-white">Body copy:</strong> Smash factor is ball speed divided by club head speed. It tells you how cleanly you're striking the ball. A 1.50 smash factor with a driver means you're transferring energy efficiently. Below 1.40? You're leaving 10-20 yards on the table with off-center hits. Check your smash factor in your session data this week.</p>
+              <p class="mb-2"><strong class="text-white">Benchmarks:</strong></p>
+              <ul class="list-disc list-inside ml-2 space-y-1">
+                <li>Driver: 1.44-1.50 (tour avg 1.49)</li>
+                <li>7-iron: 1.33-1.36</li>
+                <li>Wedges: 1.22-1.25</li>
+              </ul>
+              <p class="mt-2"><strong class="text-white">Primary CTA:</strong> "Check Your Smash Factor" &rarr; deep link: <span class="mono text-blue-400">rapsodo://sessions</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- #17 -->
+      <div class="tp-push rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#17</span>
+          <span class="badge-push text-xs px-2 py-0.5 rounded font-medium">PUSH</span>
+          <span class="text-sm font-semibold text-white">CE_W5_Nudge_Push</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 31</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-purple-400">133028</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition</div>
+            <div class="text-amber-400 text-xs">If last_mlm2_shot_date is 3+ days ago</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Title</div>
+            <div class="text-white font-medium">"Check your smash factor today"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300">Are you making clean contact? Hit a quick session and check your smash factor for each club.</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Deep Link</div>
+            <div class="mono text-xs text-purple-400">rapsodo://practice</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEEK 6 -->
+    <div class="mb-8">
+      <h3 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+        <span class="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">WEEK 6</span>
+        Courses Mode Introduction
+      </h3>
+      <p class="text-xs text-slate-500 mb-4">Days 35-41 &mdash; Expand from practice to play</p>
+
+      <!-- #18 -->
+      <div class="tp-email rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#18</span>
+          <span class="badge-email text-xs px-2 py-0.5 rounded font-medium">EMAIL</span>
+          <span class="text-sm font-semibold text-white">CE_W6_Anchor_Email</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 35</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-blue-400">81836</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition</div>
+            <div class="text-slate-300">Always send</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Subject</div>
+            <div class="text-white font-medium">"practice is great, but let's play"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Preheader</div>
+            <div class="text-slate-300">WEEK 6 &mdash; Courses Mode: play 30,000+ real courses with your MLM2PRO</div>
+          </div>
+          <div class="md:col-span-2">
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300 bg-slate-950/50 rounded p-3 text-xs leading-relaxed">
+              <p class="mb-2"><strong class="text-white">Headline:</strong> You've been practicing. Time to play.</p>
+              <p class="mb-2"><strong class="text-white">Body copy:</strong> You've built a solid practice habit. Now take it to the course &mdash; without leaving the range. Courses Mode lets you play full rounds on 30,000+ real courses. Pebble Beach, St. Andrews, your local municipal &mdash; pick any course and play hole by hole. Every shot tracks against the course layout, so you see how your practice translates to real golf.</p>
+              <p class="mb-2"><strong class="text-white">How to start:</strong></p>
+              <ul class="list-disc list-inside ml-2 space-y-1">
+                <li>Open the app &rarr; Modes &rarr; Courses</li>
+                <li>Search for any course or browse popular ones</li>
+                <li>Select your tees and play</li>
+              </ul>
+              <p class="mt-2"><strong class="text-white">Primary CTA:</strong> "Browse Courses" &rarr; deep link: <span class="mono text-blue-400">rapsodo://courses</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- #19 -->
+      <div class="tp-inapp rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#19</span>
+          <span class="badge-inapp text-xs px-2 py-0.5 rounded font-medium">IN-APP</span>
+          <span class="text-sm font-semibold text-white">CE_W6_CoursesPrompt_InApp</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 37</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-emerald-400">133085</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition</div>
+            <div class="text-amber-400 text-xs">On session_start if SIM_RAPSODO_COURSES = 0</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Display Type</div>
+            <div class="text-white font-medium">Modal (center screen)</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Trigger Event</div>
+            <div class="mono text-xs text-emerald-400">session_start (where SIM_RAPSODO_COURSES = 0)</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Title</div>
+            <div class="text-white font-medium">"Mix up your practice"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300">You've been practicing &mdash; now see how it translates. Play a round on any of 30,000+ courses with Courses Mode.</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Primary Button</div>
+            <div class="text-white">"Try Courses Mode" &rarr; <span class="mono text-xs text-emerald-400">rapsodo://courses</span></div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Dismiss Button</div>
+            <div class="text-slate-400">"Keep Practicing"</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- #20 -->
+      <div class="tp-push rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#20</span>
+          <span class="badge-push text-xs px-2 py-0.5 rounded font-medium">PUSH</span>
+          <span class="text-sm font-semibold text-white">CE_W6_Nudge_CoursesFocus_Push</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 38</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-purple-400">133028</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition</div>
+            <div class="text-amber-400 text-xs">If SIM_RAPSODO_COURSES = 0</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Title</div>
+            <div class="text-white font-medium">"30,000+ courses in your pocket"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300">Play Pebble Beach, St. Andrews, or your local course. Courses Mode is waiting for you.</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Deep Link</div>
+            <div class="mono text-xs text-purple-400">rapsodo://courses</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEEK 7 -->
+    <div class="mb-8">
+      <h3 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+        <span class="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">WEEK 7</span>
+        Range Mode Structure
+      </h3>
+      <p class="text-xs text-slate-500 mb-4">Days 42-48 &mdash; Structured practice across clubs</p>
+
+      <!-- #21 -->
+      <div class="tp-email rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#21</span>
+          <span class="badge-email text-xs px-2 py-0.5 rounded font-medium">EMAIL</span>
+          <span class="text-sm font-semibold text-white">CE_W7_Anchor_Email</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 42</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-blue-400">81836</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition</div>
+            <div class="text-slate-300">Always send</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Subject</div>
+            <div class="text-white font-medium">"random practice vs structured practice"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Preheader</div>
+            <div class="text-slate-300">WEEK 7 &mdash; Range Mode gives your sessions structure</div>
+          </div>
+          <div class="md:col-span-2">
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300 bg-slate-950/50 rounded p-3 text-xs leading-relaxed">
+              <p class="mb-2"><strong class="text-white">Headline:</strong> Structure beats random</p>
+              <p class="mb-2"><strong class="text-white">Body copy:</strong> Random practice is hitting balls until the bucket's empty. Structured practice is working through your bag with purpose. Range Mode gives you a guided session &mdash; set a target number of shots per club, work through your bag, and see consistency data for each one. The golfers who improve fastest practice with structure.</p>
+              <p class="mb-2"><strong class="text-white">How it works:</strong></p>
+              <ul class="list-disc list-inside ml-2 space-y-1">
+                <li>Select your clubs from your configured bag</li>
+                <li>Set shot counts per club (5, 10, 15)</li>
+                <li>Work through each club in sequence</li>
+                <li>Get consistency ratings for each club when done</li>
+              </ul>
+              <p class="mt-2"><strong class="text-white">Primary CTA:</strong> "Try Range Mode" &rarr; deep link: <span class="mono text-blue-400">rapsodo://range</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- #22 -->
+      <div class="tp-push rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#22</span>
+          <span class="badge-push text-xs px-2 py-0.5 rounded font-medium">PUSH</span>
+          <span class="text-sm font-semibold text-white">CE_W7_Nudge_Push</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 45</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-purple-400">133028</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition</div>
+            <div class="text-amber-400 text-xs">If SIM_RANGE = 0</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Title</div>
+            <div class="text-white font-medium">"Structure beats random"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300">Range Mode gives your session structure. Pick your clubs, set your counts, and work through your bag with purpose.</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Deep Link</div>
+            <div class="mono text-xs text-purple-400">rapsodo://range</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEEK 8 -->
+    <div class="mb-8">
+      <h3 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+        <span class="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">WEEK 8</span>
+        Habit Celebration
+      </h3>
+      <p class="text-xs text-slate-500 mb-4">Days 49-56 &mdash; Celebrate and sustain</p>
+
+      <!-- #23 -->
+      <div class="tp-email rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#23</span>
+          <span class="badge-email text-xs px-2 py-0.5 rounded font-medium">EMAIL</span>
+          <span class="text-sm font-semibold text-white">CE_W8_Anchor_Email</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 49</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-blue-400">81836</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition</div>
+            <div class="text-slate-300">Always send</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Subject</div>
+            <div class="text-white font-medium">"8 weeks of data tells a story"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Preheader</div>
+            <div class="text-slate-300">Your habit is built &mdash; here's what the data says</div>
+          </div>
+          <div class="md:col-span-2">
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300 bg-slate-950/50 rounded p-3 text-xs leading-relaxed">
+              <p class="mb-2"><strong class="text-white">Headline:</strong> 8 weeks. Real data. Real progress.</p>
+              <p class="mb-2"><strong class="text-white">Body copy:</strong> Eight weeks ago, you started with your first session. Since then you've built a practice habit, learned to read your data, tracked your trends, and expanded into new ways to play. Your MLM2PRO has captured every shot. Open Session Insights and look at your 8-week trend &mdash; you'll see the progress. Keep the weekly habit going.</p>
+              <p class="mb-2"><strong class="text-white">Personalization:</strong></p>
+              <ul class="list-disc list-inside ml-2 space-y-1">
+                <li>Total sessions: {{mlm2_session_count}}</li>
+                <li>Total shots: {{total_shots}}</li>
+                <li>Modes explored: {{modes_used}}</li>
+              </ul>
+              <p class="mt-2"><strong class="text-white">Primary CTA:</strong> "See Your 8-Week Journey" &rarr; deep link: <span class="mono text-blue-400">rapsodo://session-insights</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- #24 -->
+      <div class="tp-push rounded-lg p-5 mb-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-xs font-mono font-bold text-slate-500">#24</span>
+          <span class="badge-push text-xs px-2 py-0.5 rounded font-medium">PUSH</span>
+          <span class="text-sm font-semibold text-white">CE_W8_Complete_Push</span>
+          <span class="text-xs text-slate-600 ml-auto">Day 56</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Message Type ID</div>
+            <div class="mono text-xs text-purple-400">133028</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Condition</div>
+            <div class="text-slate-300">Always send (journey complete)</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Title</div>
+            <div class="text-white font-medium">"8 weeks complete"</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Body</div>
+            <div class="text-slate-300">You built a practice habit. The data's all there. Keep the weekly session going &mdash; your best golf is ahead.</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Deep Link</div>
+            <div class="mono text-xs text-purple-400">rapsodo://session-insights</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 3: CAMPAIGNS TO CREATE -->
+<!-- ============================================================ -->
+<section id="campaigns" class="mb-16">
+  <div class="collapsible-toggle flex items-center gap-3 mb-6" onclick="toggleSection('campaigns-content')">
+    <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 font-bold text-sm">3</div>
+    <h2 class="text-2xl font-bold text-white">Campaigns to Create</h2>
+    <span class="text-xs text-slate-500 ml-2">24 campaigns</span>
+    <svg id="campaigns-content-chevron" class="w-5 h-5 text-slate-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+  </div>
+
+  <div id="campaigns-content" class="collapsible-content" style="max-height: 50000px;">
+
+    <div class="bg-slate-900/40 border border-slate-800/50 rounded-lg p-4 mb-6 text-sm text-slate-400">
+      <span class="text-white font-semibold">All campaigns:</span> Type = <span class="mono text-xs text-emerald-400">Triggered</span> &nbsp;&bull;&nbsp; skipDuplicate = <span class="mono text-xs text-emerald-400">yes</span> &nbsp;&bull;&nbsp; respectFrequencyCap = <span class="mono text-xs text-emerald-400">yes</span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm border-collapse">
+        <thead>
+          <tr class="border-b border-slate-700/50">
+            <th class="text-left py-3 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-8">#</th>
+            <th class="text-left py-3 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Campaign Name</th>
+            <th class="text-left py-3 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Channel</th>
+            <th class="text-left py-3 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Message Type ID</th>
+            <th class="text-left py-3 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Template</th>
+            <th class="text-left py-3 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Day</th>
+            <th class="text-left py-3 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">1</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W1_Anchor_Email</td>
+            <td class="py-2.5 px-3"><span class="badge-email text-[10px] px-1.5 py-0.5 rounded">Email</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-blue-400">81836</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W1_Anchor_Email</td>
+            <td class="py-2.5 px-3 text-xs">0</td>
+            <td class="py-2.5 px-3 text-xs text-slate-500">Always send</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">2</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W1_Nudge_Push</td>
+            <td class="py-2.5 px-3"><span class="badge-push text-[10px] px-1.5 py-0.5 rounded">Push</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-purple-400">133028</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W1_Nudge_Push</td>
+            <td class="py-2.5 px-3 text-xs">3</td>
+            <td class="py-2.5 px-3 text-xs text-amber-400">Conditional: no sessions</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">3</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W1_Reinforcement_Active_Email</td>
+            <td class="py-2.5 px-3"><span class="badge-email text-[10px] px-1.5 py-0.5 rounded">Email</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-blue-400">81836</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W1_Reinforcement_Active_Email</td>
+            <td class="py-2.5 px-3 text-xs">6</td>
+            <td class="py-2.5 px-3 text-xs text-emerald-400">YES branch: sessions +1</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">4</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W1_Reinforcement_Dormant_Push</td>
+            <td class="py-2.5 px-3"><span class="badge-push text-[10px] px-1.5 py-0.5 rounded">Push</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-purple-400">133028</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W1_Reinforcement_Dormant_Push</td>
+            <td class="py-2.5 px-3 text-xs">6</td>
+            <td class="py-2.5 px-3 text-xs text-red-400">NO branch: no sessions</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">5</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W2_Anchor_Email</td>
+            <td class="py-2.5 px-3"><span class="badge-email text-[10px] px-1.5 py-0.5 rounded">Email</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-blue-400">81836</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W2_Anchor_Email</td>
+            <td class="py-2.5 px-3 text-xs">7</td>
+            <td class="py-2.5 px-3 text-xs text-slate-500">Always send</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">6</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W2_SessionReview_InApp</td>
+            <td class="py-2.5 px-3"><span class="badge-inapp text-[10px] px-1.5 py-0.5 rounded">InApp</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-emerald-400">133085</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W2_SessionReview_InApp</td>
+            <td class="py-2.5 px-3 text-xs">8</td>
+            <td class="py-2.5 px-3 text-xs text-amber-400">Trigger: session 20+ shots</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">7</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W2_Nudge_Push</td>
+            <td class="py-2.5 px-3"><span class="badge-push text-[10px] px-1.5 py-0.5 rounded">Push</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-purple-400">133028</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W2_Nudge_Push</td>
+            <td class="py-2.5 px-3 text-xs">10</td>
+            <td class="py-2.5 px-3 text-xs text-amber-400">Conditional: 3+ days ago</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">8</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W2_Reinforcement_Email</td>
+            <td class="py-2.5 px-3"><span class="badge-email text-[10px] px-1.5 py-0.5 rounded">Email</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-blue-400">81836</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W2_Reinforcement_Email</td>
+            <td class="py-2.5 px-3 text-xs">13</td>
+            <td class="py-2.5 px-3 text-xs text-slate-500">Always send</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">9</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W3_Anchor_Email</td>
+            <td class="py-2.5 px-3"><span class="badge-email text-[10px] px-1.5 py-0.5 rounded">Email</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-blue-400">81836</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W3_Anchor_Email</td>
+            <td class="py-2.5 px-3 text-xs">14</td>
+            <td class="py-2.5 px-3 text-xs text-slate-500">Always send</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">10</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W3_Nudge_Push</td>
+            <td class="py-2.5 px-3"><span class="badge-push text-[10px] px-1.5 py-0.5 rounded">Push</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-purple-400">133028</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W3_Nudge_Push</td>
+            <td class="py-2.5 px-3 text-xs">17</td>
+            <td class="py-2.5 px-3 text-xs text-amber-400">Conditional: no session 72hr</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">11</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W3_MetricFocus_InApp</td>
+            <td class="py-2.5 px-3"><span class="badge-inapp text-[10px] px-1.5 py-0.5 rounded">InApp</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-emerald-400">133085</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W3_MetricFocus_InApp</td>
+            <td class="py-2.5 px-3 text-xs">20</td>
+            <td class="py-2.5 px-3 text-xs text-slate-500">On session_start</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">12</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W4_Anchor_Email</td>
+            <td class="py-2.5 px-3"><span class="badge-email text-[10px] px-1.5 py-0.5 rounded">Email</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-blue-400">81836</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W4_Anchor_Email</td>
+            <td class="py-2.5 px-3 text-xs">21</td>
+            <td class="py-2.5 px-3 text-xs text-slate-500">Always send</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">13</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W4_InsightsPrompt_InApp</td>
+            <td class="py-2.5 px-3"><span class="badge-inapp text-[10px] px-1.5 py-0.5 rounded">InApp</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-emerald-400">133085</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W4_InsightsPrompt_InApp</td>
+            <td class="py-2.5 px-3 text-xs">22</td>
+            <td class="py-2.5 px-3 text-xs text-amber-400">Trigger: View Session Detail</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">14</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W4_Nudge_InsightsFocus_Push</td>
+            <td class="py-2.5 px-3"><span class="badge-push text-[10px] px-1.5 py-0.5 rounded">Push</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-purple-400">133028</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W4_Nudge_InsightsFocus_Push</td>
+            <td class="py-2.5 px-3 text-xs">24</td>
+            <td class="py-2.5 px-3 text-xs text-amber-400">Conditional: Insights = 0</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">15</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W4_Reinforcement_InsightsValue_Email</td>
+            <td class="py-2.5 px-3"><span class="badge-email text-[10px] px-1.5 py-0.5 rounded">Email</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-blue-400">81836</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W4_Reinforcement_InsightsValue_Email</td>
+            <td class="py-2.5 px-3 text-xs">27</td>
+            <td class="py-2.5 px-3 text-xs text-emerald-400">YES branch: Insights > 0</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">16</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W5_Anchor_Email</td>
+            <td class="py-2.5 px-3"><span class="badge-email text-[10px] px-1.5 py-0.5 rounded">Email</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-blue-400">81836</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W5_Anchor_Email</td>
+            <td class="py-2.5 px-3 text-xs">28</td>
+            <td class="py-2.5 px-3 text-xs text-slate-500">Always send</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">17</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W5_Nudge_Push</td>
+            <td class="py-2.5 px-3"><span class="badge-push text-[10px] px-1.5 py-0.5 rounded">Push</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-purple-400">133028</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W5_Nudge_Push</td>
+            <td class="py-2.5 px-3 text-xs">31</td>
+            <td class="py-2.5 px-3 text-xs text-amber-400">Conditional: 3+ days ago</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">18</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W6_Anchor_Email</td>
+            <td class="py-2.5 px-3"><span class="badge-email text-[10px] px-1.5 py-0.5 rounded">Email</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-blue-400">81836</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W6_Anchor_Email</td>
+            <td class="py-2.5 px-3 text-xs">35</td>
+            <td class="py-2.5 px-3 text-xs text-slate-500">Always send</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">19</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W6_CoursesPrompt_InApp</td>
+            <td class="py-2.5 px-3"><span class="badge-inapp text-[10px] px-1.5 py-0.5 rounded">InApp</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-emerald-400">133085</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W6_CoursesPrompt_InApp</td>
+            <td class="py-2.5 px-3 text-xs">37</td>
+            <td class="py-2.5 px-3 text-xs text-amber-400">Conditional: Courses = 0</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">20</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W6_Nudge_CoursesFocus_Push</td>
+            <td class="py-2.5 px-3"><span class="badge-push text-[10px] px-1.5 py-0.5 rounded">Push</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-purple-400">133028</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W6_Nudge_CoursesFocus_Push</td>
+            <td class="py-2.5 px-3 text-xs">38</td>
+            <td class="py-2.5 px-3 text-xs text-amber-400">Conditional: Courses = 0</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">21</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W7_Anchor_Email</td>
+            <td class="py-2.5 px-3"><span class="badge-email text-[10px] px-1.5 py-0.5 rounded">Email</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-blue-400">81836</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W7_Anchor_Email</td>
+            <td class="py-2.5 px-3 text-xs">42</td>
+            <td class="py-2.5 px-3 text-xs text-slate-500">Always send</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">22</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W7_Nudge_Push</td>
+            <td class="py-2.5 px-3"><span class="badge-push text-[10px] px-1.5 py-0.5 rounded">Push</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-purple-400">133028</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W7_Nudge_Push</td>
+            <td class="py-2.5 px-3 text-xs">45</td>
+            <td class="py-2.5 px-3 text-xs text-amber-400">Conditional: Range = 0</td>
+          </tr>
+          <tr class="border-b border-slate-800/30 hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">23</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W8_Anchor_Email</td>
+            <td class="py-2.5 px-3"><span class="badge-email text-[10px] px-1.5 py-0.5 rounded">Email</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-blue-400">81836</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W8_Anchor_Email</td>
+            <td class="py-2.5 px-3 text-xs">49</td>
+            <td class="py-2.5 px-3 text-xs text-slate-500">Always send</td>
+          </tr>
+          <tr class="hover:bg-slate-900/40">
+            <td class="py-2.5 px-3 text-xs text-slate-600 mono">24</td>
+            <td class="py-2.5 px-3 text-white font-medium mono text-xs">CE_W8_Complete_Push</td>
+            <td class="py-2.5 px-3"><span class="badge-push text-[10px] px-1.5 py-0.5 rounded">Push</span></td>
+            <td class="py-2.5 px-3 mono text-xs text-purple-400">133028</td>
+            <td class="py-2.5 px-3 text-xs text-slate-400">CE_W8_Complete_Push</td>
+            <td class="py-2.5 px-3 text-xs">56</td>
+            <td class="py-2.5 px-3 text-xs text-slate-500">Always send</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 4: JOURNEY CANVAS BUILD -->
+<!-- ============================================================ -->
+<section id="canvas" class="mb-16">
+  <div class="collapsible-toggle flex items-center gap-3 mb-6" onclick="toggleSection('canvas-content')">
+    <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 font-bold text-sm">4</div>
+    <h2 class="text-2xl font-bold text-white">Journey Canvas Build</h2>
+    <span class="text-xs text-slate-500 ml-2">Step-by-step</span>
+    <svg id="canvas-content-chevron" class="w-5 h-5 text-slate-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+  </div>
+
+  <div id="canvas-content" class="collapsible-content" style="max-height: 50000px;">
+
+    <!-- Step 1: Create Journey -->
+    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 mb-6">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold">1</span>
+        <h3 class="text-lg font-semibold text-white">Create the Journey</h3>
+      </div>
+      <ol class="space-y-2 text-sm text-slate-300 ml-10 list-decimal">
+        <li>Navigate to <span class="mono text-xs text-blue-400">Messaging &rarr; Journeys &rarr; New Journey</span></li>
+        <li>Journey Name: <span class="text-white font-medium">"Weekly Practice Habit Builder"</span></li>
+        <li>Description: <span class="text-slate-400">"8-week progressive habit formation journey for active paid subscribers. 24 touchpoints across email, push, and in-app."</span></li>
+        <li>Folder: <span class="mono text-xs text-blue-400">Journey Builder (1340586)</span></li>
+      </ol>
+    </div>
+
+    <!-- Step 2: Entry Trigger -->
+    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 mb-6">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold">2</span>
+        <h3 class="text-lg font-semibold text-white">Configure Entry Trigger</h3>
+      </div>
+      <ol class="space-y-2 text-sm text-slate-300 ml-10 list-decimal">
+        <li>Entry source: <span class="text-white font-medium">List Membership</span></li>
+        <li>List: <span class="mono text-xs text-blue-400">"Active Paid &mdash; 1+ session in 14 days"</span></li>
+        <li>Re-entry: <span class="text-white">Allow re-entry after journey completion</span> (users who complete can re-enter on next list refresh)</li>
+        <li>Filter: <span class="text-slate-400">NOT currently in journey "At-Risk Recovery"</span></li>
+      </ol>
+    </div>
+
+    <!-- Step 3: Exit Conditions -->
+    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 mb-6">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold">3</span>
+        <h3 class="text-lg font-semibold text-white">Configure Exit Conditions</h3>
+      </div>
+      <ol class="space-y-2 text-sm text-slate-300 ml-10 list-decimal">
+        <li>Click <span class="mono text-xs text-blue-400">Journey Settings &rarr; Exit Conditions</span></li>
+        <li>Add exit condition 1:
+          <div class="ml-4 mt-1 bg-red-500/5 border border-red-500/20 rounded p-3">
+            <span class="text-xs text-red-400 font-medium">Condition:</span> <span class="text-xs text-slate-300">User field <span class="mono text-red-400">mlm2_days_since_last_session</span> >= 14</span><br>
+            <span class="text-xs text-red-400 font-medium">Action:</span> <span class="text-xs text-slate-300">Move to journey "At-Risk Recovery"</span>
+          </div>
+        </li>
+        <li>Add exit condition 2:
+          <div class="ml-4 mt-1 bg-red-500/5 border border-red-500/20 rounded p-3">
+            <span class="text-xs text-red-400 font-medium">Condition:</span> <span class="text-xs text-slate-300">Custom event <span class="mono text-red-400">customer.subscription.deleted</span> fired</span><br>
+            <span class="text-xs text-red-400 font-medium">Action:</span> <span class="text-xs text-slate-300">Exit journey immediately</span>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <!-- Step 4: Build the Canvas - Week by Week -->
+    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 mb-6">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold">4</span>
+        <h3 class="text-lg font-semibold text-white">Build the Canvas &mdash; Node by Node</h3>
+      </div>
+      <p class="text-sm text-slate-400 ml-10 mb-6">Add nodes to the canvas in this exact order. Each week follows the pattern: Anchor &rarr; Wait &rarr; Nudge/Trigger &rarr; Wait &rarr; Reinforcement &rarr; Wait &rarr; Next Week.</p>
+
+      <!-- Week 1 Canvas -->
+      <div class="ml-10 mb-8">
+        <h4 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+          Week 1: Days 0-6
+        </h4>
+        <div class="space-y-2 relative pl-6 flow-line ml-2">
+
+          <div class="relative py-2">
+            <div class="flow-dot bg-blue-500"></div>
+            <div class="bg-blue-500/5 border border-blue-500/20 rounded-lg p-3 ml-4">
+              <div class="flex items-center gap-2 text-xs">
+                <span class="font-bold text-blue-400">SEND</span>
+                <span class="text-slate-500">|</span>
+                <span class="text-white">CE_W1_Anchor_Email</span>
+                <span class="text-slate-600 ml-auto">Day 0</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="relative py-2">
+            <div class="flow-dot bg-slate-600"></div>
+            <div class="bg-slate-800/50 border border-slate-700/30 rounded-lg p-3 ml-4 border-dashed">
+              <div class="flex items-center gap-2 text-xs">
+                <span class="font-bold text-slate-400">WAIT</span>
+                <span class="text-slate-500">|</span>
+                <span class="text-white">3 days</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="relative py-2">
+            <div class="flow-dot bg-amber-500"></div>
+            <div class="decision-node rounded-lg p-3 ml-4">
+              <div class="flex items-center gap-2 text-xs">
+                <span class="font-bold text-amber-400">DECISION</span>
+                <span class="text-slate-500">|</span>
+                <span class="text-white">mlm2numSessions unchanged since entry?</span>
+                <span class="text-slate-600 ml-auto">Day 3</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="relative py-2 ml-8">
+            <div class="text-xs text-amber-400 mb-2 flex gap-8">
+              <span>YES (unchanged / no sessions) &darr;</span>
+            </div>
+            <div class="bg-purple-500/5 border border-purple-500/20 rounded-lg p-3">
+              <div class="flex items-center gap-2 text-xs">
+                <span class="font-bold text-purple-400">SEND</span>
+                <span class="text-slate-500">|</span>
+                <span class="text-white">CE_W1_Nudge_Push</span>
+                <span class="text-slate-600 ml-auto">#2</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="relative py-2">
+            <div class="flow-dot bg-slate-600"></div>
+            <div class="bg-slate-800/50 border border-slate-700/30 rounded-lg p-3 ml-4 border-dashed">
+              <div class="flex items-center gap-2 text-xs">
+                <span class="font-bold text-slate-400">WAIT</span>
+                <span class="text-slate-500">|</span>
+                <span class="text-white">3 days (to Day 6)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="relative py-2">
+            <div class="flow-dot bg-amber-500"></div>
+            <div class="decision-node rounded-lg p-3 ml-4">
+              <div class="flex items-center gap-2 text-xs">
+                <span class="font-bold text-amber-400">DECISION</span>
+                <span class="text-slate-500">|</span>
+                <span class="text-white">mlm2numSessions increased by 1+ since Day 0?</span>
+                <span class="text-slate-600 ml-auto">Day 6</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="relative py-2 ml-8 grid grid-cols-2 gap-4">
+            <div>
+              <div class="text-xs text-emerald-400 mb-2">YES (active) &darr;</div>
+              <div class="bg-blue-500/5 border border-blue-500/20 rounded-lg p-3">
+                <div class="flex items-center gap-2 text-xs">
+                  <span class="font-bold text-blue-400">SEND</span>
+                  <span class="text-slate-500">|</span>
+                  <span class="text-white">CE_W1_Reinforcement_Active_Email</span>
+                  <span class="text-slate-600 ml-auto">#3</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="text-xs text-red-400 mb-2">NO (dormant) &darr;</div>
+              <div class="bg-purple-500/5 border border-purple-500/20 rounded-lg p-3">
+                <div class="flex items-center gap-2 text-xs">
+                  <span class="font-bold text-purple-400">SEND</span>
+                  <span class="text-slate-500">|</span>
+                  <span class="text-white">CE_W1_Reinforcement_Dormant_Push</span>
+                  <span class="text-slate-600 ml-auto">#4</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="relative py-2">
+            <div class="flow-dot bg-slate-600"></div>
+            <div class="bg-slate-800/50 border border-slate-700/30 rounded-lg p-3 ml-4 border-dashed">
+              <div class="flex items-center gap-2 text-xs">
+                <span class="font-bold text-slate-400">WAIT</span>
+                <span class="text-slate-500">|</span>
+                <span class="text-white">1 day (merge branches, advance to Day 7)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Week 2 Canvas -->
+      <div class="ml-10 mb-8">
+        <h4 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+          Week 2: Days 7-13
+        </h4>
+        <div class="space-y-2 relative pl-6 flow-line ml-2">
+          <div class="relative py-2">
+            <div class="flow-dot bg-blue-500"></div>
+            <div class="bg-blue-500/5 border border-blue-500/20 rounded-lg p-3 ml-4">
+              <div class="flex items-center gap-2 text-xs">
+                <span class="font-bold text-blue-400">SEND</span>
+                <span class="text-slate-500">|</span>
+                <span class="text-white">CE_W2_Anchor_Email</span>
+                <span class="text-slate-600 ml-auto">Day 7 | #5</span>
+              </div>
+            </div>
+          </div>
+          <div class="relative py-2">
+            <div class="flow-dot bg-slate-600"></div>
+            <div class="bg-slate-800/50 border border-slate-700/30 rounded-lg p-3 ml-4 border-dashed">
+              <div class="text-xs"><span class="font-bold text-slate-400">WAIT</span> <span class="text-slate-500">|</span> <span class="text-white">1 day</span></div>
+            </div>
+          </div>
+          <div class="relative py-2">
+            <div class="flow-dot bg-emerald-500"></div>
+            <div class="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3 ml-4">
+              <div class="flex items-center gap-2 text-xs">
+                <span class="font-bold text-emerald-400">SEND</span>
+                <span class="text-slate-500">|</span>
+                <span class="text-white">CE_W2_SessionReview_InApp</span>
+                <span class="text-xs text-amber-400 ml-2">(event trigger: Play Session v2 with 20+ shots)</span>
+                <span class="text-slate-600 ml-auto">Day 8 | #6</span>
+              </div>
+            </div>
+          </div>
+          <div class="relative py-2">
+            <div class="flow-dot bg-slate-600"></div>
+            <div class="bg-slate-800/50 border border-slate-700/30 rounded-lg p-3 ml-4 border-dashed">
+              <div class="text-xs"><span class="font-bold text-slate-400">WAIT</span> <span class="text-slate-500">|</span> <span class="text-white">2 days</span></div>
+            </div>
+          </div>
+          <div class="relative py-2">
+            <div class="flow-dot bg-amber-500"></div>
+            <div class="decision-node rounded-lg p-3 ml-4">
+              <div class="text-xs"><span class="font-bold text-amber-400">DECISION</span> <span class="text-slate-500">|</span> <span class="text-white">last_mlm2_shot_date is 3+ days ago?</span> <span class="text-slate-600 ml-2">Day 10</span></div>
+            </div>
+          </div>
+          <div class="relative py-2 ml-8">
+            <div class="text-xs text-amber-400 mb-2">YES (inactive 3+ days) &darr;</div>
+            <div class="bg-purple-500/5 border border-purple-500/20 rounded-lg p-3">
+              <div class="text-xs"><span class="font-bold text-purple-400">SEND</span> <span class="text-slate-500">|</span> <span class="text-white">CE_W2_Nudge_Push</span> <span class="text-slate-600 ml-auto">#7</span></div>
+            </div>
+          </div>
+          <div class="relative py-2">
+            <div class="flow-dot bg-slate-600"></div>
+            <div class="bg-slate-800/50 border border-slate-700/30 rounded-lg p-3 ml-4 border-dashed">
+              <div class="text-xs"><span class="font-bold text-slate-400">WAIT</span> <span class="text-slate-500">|</span> <span class="text-white">3 days</span></div>
+            </div>
+          </div>
+          <div class="relative py-2">
+            <div class="flow-dot bg-blue-500"></div>
+            <div class="bg-blue-500/5 border border-blue-500/20 rounded-lg p-3 ml-4">
+              <div class="text-xs"><span class="font-bold text-blue-400">SEND</span> <span class="text-slate-500">|</span> <span class="text-white">CE_W2_Reinforcement_Email</span> <span class="text-slate-600 ml-auto">Day 13 | #8</span></div>
+            </div>
+          </div>
+          <div class="relative py-2">
+            <div class="flow-dot bg-slate-600"></div>
+            <div class="bg-slate-800/50 border border-slate-700/30 rounded-lg p-3 ml-4 border-dashed">
+              <div class="text-xs"><span class="font-bold text-slate-400">WAIT</span> <span class="text-slate-500">|</span> <span class="text-white">1 day (to Day 14)</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Week 3 Canvas -->
+      <div class="ml-10 mb-8">
+        <h4 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+          Week 3: Days 14-20
+        </h4>
+        <div class="space-y-2 relative pl-6 flow-line ml-2">
+          <div class="relative py-2">
+            <div class="flow-dot bg-blue-500"></div>
+            <div class="bg-blue-500/5 border border-blue-500/20 rounded-lg p-3 ml-4">
+              <div class="text-xs"><span class="font-bold text-blue-400">SEND</span> <span class="text-slate-500">|</span> <span class="text-white">CE_W3_Anchor_Email</span> <span class="text-slate-600 ml-auto">Day 14 | #9</span></div>
+            </div>
+          </div>
+          <div class="relative py-2">
+            <div class="flow-dot bg-slate-600"></div>
+            <div class="bg-slate-800/50 border border-slate-700/30 rounded-lg p-3 ml-4 border-dashed">
+              <div class="text-xs"><span class="font-bold text-slate-400">WAIT</span> <span class="text-slate-500">|</span> <span class="text-white">3 days</span></div>
+            </div>
+          </div>
+          <div class="relative py-2">
+            <div class="flow-dot bg-amber-500"></div>
+            <div class="decision-node rounded-lg p-3 ml-4">
+              <div class="text-xs"><span class="font-bold text-amber-400">DECISION</span> <span class="text-slate-500">|</span> <span class="text-white">No Play Session v2 in last 72 hours?</span> <span class="text-slate-600 ml-2">Day 17</span></div>
+            </div>
+          </div>
+          <div class="relative py-2 ml-8">
+            <div class="text-xs text-amber-400 mb-2">YES (no session in 72hr) &darr;</div>
+            <div class="bg-purple-500/5 border border-purple-500/20 rounded-lg p-3">
+              <div class="text-xs"><span class="font-bold text-purple-400">SEND</span> <span class="text-slate-500">|</span> <span class="text-white">CE_W3_Nudge_Push</span> <span class="text-slate-600 ml-auto">#10</span></div>
+            </div>
+          </div>
+          <div class="relative py-2">
+            <div class="flow-dot bg-slate-600"></div>
+            <div class="bg-slate-800/50 border border-slate-700/30 rounded-lg p-3 ml-4 border-dashed">
+              <div class="text-xs"><span class="font-bold text-slate-400">WAIT</span> <span class="text-slate-500">|</span> <span class="text-white">3 days</span></div>
+            </div>
+          </div>
+          <div class="relative py-2">
+            <div class="flow-dot bg-emerald-500"></div>
+            <div class="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3 ml-4">
+              <div class="text-xs"><span class="font-bold text-emerald-400">SEND</span> <span class="text-slate-500">|</span> <span class="text-white">CE_W3_MetricFocus_InApp</span> <span class="text-xs text-amber-400 ml-2">(trigger: session_start)</span> <span class="text-slate-600 ml-auto">Day 20 | #11</span></div>
+            </div>
+          </div>
+          <div class="relative py-2">
+            <div class="flow-dot bg-slate-600"></div>
+            <div class="bg-slate-800/50 border border-slate-700/30 rounded-lg p-3 ml-4 border-dashed">
+              <div class="text-xs"><span class="font-bold text-slate-400">WAIT</span> <span class="text-slate-500">|</span> <span class="text-white">1 day (to Day 21)</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Week 4 Canvas -->
+      <div class="ml-10 mb-8">
+        <h4 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+          Week 4: Days 21-27
+        </h4>
+        <div class="space-y-2 relative pl-6 flow-line ml-2">
+          <div class="relative py-2">
+            <div class="flow-dot bg-blue-500"></div>
+            <div class="bg-blue-500/5 border border-blue-500/20 rounded-lg p-3 ml-4">
+              <div class="text-xs"><span class="font-bold text-blue-400">SEND</span> <span class="text-slate-500">|</span> <span class="text-white">CE_W4_Anchor_Email</span> <span class="text-slate-600 ml-auto">Day 21 | #12</span></div>
+            </div>
+          </div>
+          <div class="relative py-2">
+            <div class="flow-dot bg-slate-600"></div>
+            <div class="bg-slate-800/50 border border-slate-700/30 rounded-lg p-3 ml-4 border-dashed">
+              <div class="text-xs"><span class="font-bold text-slate-400">WAIT</span> <span class="text-slate-500">|</span> <span class="text-white">1 day</span></div>
+            </div>
+          </div>
+          <div class="relative py-2">
+            <div class="flow-dot bg-emerald-500"></div>
+            <div class="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3 ml-4">
+              <div class="text-xs"><span class="font-bold text-emerald-400">SEND</span> <span class="text-slate-500">|</span> <span class="text-white">CE_W4_InsightsPrompt_InApp</span> <span class="text-xs text-amber-400 ml-2">(trigger: View Session Detail)</span> <span class="text-slate-600 ml-auto">Day 22 | #13</span></div>
+            </div>
+          </div>
+          <div class="relative py-2">
+            <div class="flow-dot bg-slate-600"></div>
+            <div class="bg-slate-800/50 border border-slate-700/30 rounded-lg p-3 ml-4 border-dashed">
+              <div class="text-xs"><span class="font-bold text-slate-400">WAIT</span> <span class="text-slate-500">|</span> <span class="text-white">2 days</span></div>
+            </div>
+          </div>
+          <div class="relative py-2">
+            <div class="flow-dot bg-amber-500"></div>
+            <div class="decision-node rounded-lg p-3 ml-4">
+              <div class="text-xs"><span class="font-bold text-amber-400">DECISION</span> <span class="text-slate-500">|</span> <span class="text-white">View Session Insights event count = 0?</span> <span class="text-slate-600 ml-2">Day 24</span></div>
+            </div>
+          </div>
+          <div class="relative py-2 ml-8">
+            <div class="text-xs text-amber-400 mb-2">YES (never used Insights) &darr;</div>
+            <div class="bg-purple-500/5 border border-purple-500/20 rounded-lg p-3">
+              <div class="text-xs"><span class="font-bold text-purple-400">SEND</span> <span class="text-slate-500">|</span> <span class="text-white">CE_W4_Nudge_InsightsFocus_Push</span> <span class="text-slate-600 ml-auto">#14</span></div>
+            </div>
+          </div>
+          <div class="relative py-2">
+            <div class="flow-dot bg-slate-600"></div>
+            <div class="bg-slate-800/50 border border-slate-700/30 rounded-lg p-3 ml-4 border-dashed">
+              <div class="text-xs"><span class="font-bold text-slate-400">WAIT</span> <span class="text-slate-500">|</span> <span class="text-white">3 days</span></div>
+            </div>
+          </div>
+          <div class="relative py-2">
+            <div class="flow-dot bg-amber-500"></div>
+            <div class="decision-node rounded-lg p-3 ml-4">
+              <div class="text-xs"><span class="font-bold text-amber-400">DECISION</span> <span class="text-slate-500">|</span> <span class="text-white">View Session Insights event count > 0?</span> <span class="text-slate-600 ml-2">Day 27</span></div>
+            </div>
+          </div>
+          <div class="relative py-2 ml-8 grid grid-cols-2 gap-4">
+            <div>
+              <div class="text-xs text-emerald-400 mb-2">YES (has used Insights) &darr;</div>
+              <div class="bg-blue-500/5 border border-blue-500/20 rounded-lg p-3">
+                <div class="text-xs"><span class="font-bold text-blue-400">SEND</span> <span class="text-slate-500">|</span> <span class="text-white">CE_W4_Reinforcement_InsightsValue_Email</span> <span class="text-slate-600">#15</span></div>
+              </div>
+            </div>
+            <div>
+              <div class="text-xs text-red-400 mb-2">NO (skip) &darr;</div>
+              <div class="bg-slate-800/30 border border-slate-700/30 rounded-lg p-3 border-dashed">
+                <div class="text-xs text-slate-500">No send &mdash; proceed to Week 5</div>
+              </div>
+            </div>
+          </div>
+          <div class="relative py-2">
+            <div class="flow-dot bg-slate-600"></div>
+            <div class="bg-slate-800/50 border border-slate-700/30 rounded-lg p-3 ml-4 border-dashed">
+              <div class="text-xs"><span class="font-bold text-slate-400">WAIT</span> <span class="text-slate-500">|</span> <span class="text-white">1 day (to Day 28)</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weeks 5-8 Canvas (compact) -->
+      <div class="ml-10 mb-8">
+        <h4 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+          Weeks 5-8: Days 28-56 (linear pattern)
+        </h4>
+        <p class="text-xs text-slate-400 mb-4">Weeks 5-8 follow a consistent Anchor &rarr; Wait &rarr; Conditional Nudge &rarr; Wait pattern. Feature adoption checks replace session activity checks.</p>
+
+        <div class="space-y-3">
+          <!-- Week 5 -->
+          <div class="bg-slate-900/40 border border-slate-800/50 rounded-lg p-4">
+            <div class="text-xs font-bold text-white mb-2">Week 5 (Days 28-34): Smash Factor</div>
+            <div class="flex flex-wrap gap-2 text-[10px]">
+              <span class="bg-blue-500/10 text-blue-400 px-2 py-1 rounded">D28: SEND CE_W5_Anchor_Email #16</span>
+              <span class="bg-slate-700/30 text-slate-400 px-2 py-1 rounded">WAIT 3d</span>
+              <span class="bg-amber-500/10 text-amber-400 px-2 py-1 rounded">D31: DECIDE last_shot 3+ days?</span>
+              <span class="bg-purple-500/10 text-purple-400 px-2 py-1 rounded">YES: SEND CE_W5_Nudge_Push #17</span>
+              <span class="bg-slate-700/30 text-slate-400 px-2 py-1 rounded">WAIT 4d &rarr; Day 35</span>
+            </div>
+          </div>
+
+          <!-- Week 6 -->
+          <div class="bg-slate-900/40 border border-slate-800/50 rounded-lg p-4">
+            <div class="text-xs font-bold text-white mb-2">Week 6 (Days 35-41): Courses Mode</div>
+            <div class="flex flex-wrap gap-2 text-[10px]">
+              <span class="bg-blue-500/10 text-blue-400 px-2 py-1 rounded">D35: SEND CE_W6_Anchor_Email #18</span>
+              <span class="bg-slate-700/30 text-slate-400 px-2 py-1 rounded">WAIT 2d</span>
+              <span class="bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded">D37: SEND CE_W6_CoursesPrompt_InApp #19 (if COURSES=0)</span>
+              <span class="bg-slate-700/30 text-slate-400 px-2 py-1 rounded">WAIT 1d</span>
+              <span class="bg-amber-500/10 text-amber-400 px-2 py-1 rounded">D38: DECIDE COURSES=0?</span>
+              <span class="bg-purple-500/10 text-purple-400 px-2 py-1 rounded">YES: SEND CE_W6_Nudge_CoursesFocus_Push #20</span>
+              <span class="bg-slate-700/30 text-slate-400 px-2 py-1 rounded">WAIT 4d &rarr; Day 42</span>
+            </div>
+          </div>
+
+          <!-- Week 7 -->
+          <div class="bg-slate-900/40 border border-slate-800/50 rounded-lg p-4">
+            <div class="text-xs font-bold text-white mb-2">Week 7 (Days 42-48): Range Mode</div>
+            <div class="flex flex-wrap gap-2 text-[10px]">
+              <span class="bg-blue-500/10 text-blue-400 px-2 py-1 rounded">D42: SEND CE_W7_Anchor_Email #21</span>
+              <span class="bg-slate-700/30 text-slate-400 px-2 py-1 rounded">WAIT 3d</span>
+              <span class="bg-amber-500/10 text-amber-400 px-2 py-1 rounded">D45: DECIDE SIM_RANGE=0?</span>
+              <span class="bg-purple-500/10 text-purple-400 px-2 py-1 rounded">YES: SEND CE_W7_Nudge_Push #22</span>
+              <span class="bg-slate-700/30 text-slate-400 px-2 py-1 rounded">WAIT 4d &rarr; Day 49</span>
+            </div>
+          </div>
+
+          <!-- Week 8 -->
+          <div class="bg-slate-900/40 border border-slate-800/50 rounded-lg p-4">
+            <div class="text-xs font-bold text-white mb-2">Week 8 (Days 49-56): Celebration</div>
+            <div class="flex flex-wrap gap-2 text-[10px]">
+              <span class="bg-blue-500/10 text-blue-400 px-2 py-1 rounded">D49: SEND CE_W8_Anchor_Email #23</span>
+              <span class="bg-slate-700/30 text-slate-400 px-2 py-1 rounded">WAIT 7d</span>
+              <span class="bg-purple-500/10 text-purple-400 px-2 py-1 rounded">D56: SEND CE_W8_Complete_Push #24</span>
+              <span class="bg-red-500/10 text-red-400 px-2 py-1 rounded font-bold">EXIT: Journey Complete</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5: Frequency Caps -->
+    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 mb-6">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold">5</span>
+        <h3 class="text-lg font-semibold text-white">Frequency Cap Settings</h3>
+      </div>
+      <div class="ml-10 space-y-3">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div class="bg-blue-500/5 border border-blue-500/20 rounded-lg p-3">
+            <div class="text-xs font-bold text-blue-400 mb-1">Email</div>
+            <div class="text-xs text-slate-300">Max 3 per 7 days across all journeys</div>
+          </div>
+          <div class="bg-purple-500/5 border border-purple-500/20 rounded-lg p-3">
+            <div class="text-xs font-bold text-purple-400 mb-1">Push</div>
+            <div class="text-xs text-slate-300">Max 2 per 7 days across all journeys</div>
+          </div>
+          <div class="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3">
+            <div class="text-xs font-bold text-emerald-400 mb-1">In-App</div>
+            <div class="text-xs text-slate-300">Max 1 per 3 days (triggered by events)</div>
+          </div>
+        </div>
+        <p class="text-xs text-slate-500">Set in <span class="mono text-blue-400">Iterable &rarr; Settings &rarr; Frequency Capping</span>. All campaigns in this journey have <span class="mono text-emerald-400">respectFrequencyCap: yes</span>.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 5: TESTING CHECKLIST -->
+<!-- ============================================================ -->
+<section id="testing" class="mb-16">
+  <div class="collapsible-toggle flex items-center gap-3 mb-6" onclick="toggleSection('testing-content')">
+    <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 font-bold text-sm">5</div>
+    <h2 class="text-2xl font-bold text-white">Testing Checklist</h2>
+    <svg id="testing-content-chevron" class="w-5 h-5 text-slate-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+  </div>
+
+  <div id="testing-content" class="collapsible-content" style="max-height: 5000px;">
+
+    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
+
+      <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Templates</h3>
+      <div class="space-y-1 mb-6">
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">All 10 email templates created in folder "Journey Builder" (1340586)</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">All 8 push templates created with correct deep links</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">All 4 in-app templates created with correct trigger events</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">All templates use correct message type IDs (Email: 81836, Push: 133028, InApp: 133085)</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">Handlebars personalization tokens render correctly ({{total_shots}}, {{mlm2_session_count}}, etc.)</div>
+        </div>
+      </div>
+
+      <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Campaigns</h3>
+      <div class="space-y-1 mb-6">
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">All 24 campaigns created as "Triggered" type</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">Each campaign linked to its corresponding template</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">skipDuplicate = yes on all campaigns</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">respectFrequencyCap = yes on all campaigns</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">Campaign naming follows CE_W{n}_{purpose}_{channel} convention</div>
+        </div>
+      </div>
+
+      <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Journey Canvas</h3>
+      <div class="space-y-1 mb-6">
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">Journey created: "Weekly Practice Habit Builder"</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">Entry trigger: List "Active Paid &mdash; 1+ session in 14 days"</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">All 24 send nodes placed in correct sequence</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">Wait nodes have correct durations between touchpoints</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">Day 6 decision split: mlm2numSessions changed? YES = email, NO = push</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">Day 27 decision split: View Session Insights > 0? YES = email, NO = skip</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">Feature adoption checks use correct user fields (SIM_RAPSODO_COURSES, SIM_RANGE)</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">Branches merge correctly back to main flow after each decision split</div>
+        </div>
+      </div>
+
+      <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">In-App Triggers</h3>
+      <div class="space-y-1 mb-6">
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">#6 triggers on Play Session v2 completion with 20+ shots</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">#11 triggers on session_start event</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">#13 triggers on View Session Detail event</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">#19 triggers on session_start when SIM_RAPSODO_COURSES = 0</div>
+        </div>
+      </div>
+
+      <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Exit Conditions</h3>
+      <div class="space-y-1 mb-6">
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">Exit on 14+ days no login configured (moves to At-Risk journey)</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">Exit on subscription cancelled configured (immediate exit)</div>
+        </div>
+      </div>
+
+      <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">End-to-End Testing</h3>
+      <div class="space-y-1">
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">Frequency caps configured (Email: 3/7d, Push: 2/7d, InApp: 1/3d)</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">Test user with sessions receives Day 6 active branch (#3 email)</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">Test user without sessions receives Day 6 dormant branch (#4 push)</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">Test user with Insights views receives Day 27 reinforcement (#15 email)</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">Test user without Insights skips Day 27 (no send)</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">Test 14-day inactivity triggers exit to At-Risk journey</div>
+        </div>
+        <div class="checklist-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text text-sm text-slate-300">Full 56-day walkthrough completed with test user</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 6: QUICK REFERENCE -->
+<!-- ============================================================ -->
+<section id="reference" class="mb-16">
+  <div class="flex items-center gap-3 mb-6">
+    <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 font-bold text-sm">6</div>
+    <h2 class="text-2xl font-bold text-white">Quick Reference</h2>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- IDs -->
+    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+      <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Iterable IDs</h3>
+      <dl class="space-y-2 text-sm">
+        <div class="flex justify-between"><dt class="text-slate-500">Marketing Email</dt><dd class="mono text-xs text-blue-400">81836</dd></div>
+        <div class="flex justify-between"><dt class="text-slate-500">Push</dt><dd class="mono text-xs text-purple-400">133028</dd></div>
+        <div class="flex justify-between"><dt class="text-slate-500">In-App</dt><dd class="mono text-xs text-emerald-400">133085</dd></div>
+        <div class="flex justify-between"><dt class="text-slate-500">SMS</dt><dd class="mono text-xs text-amber-400">84373</dd></div>
+        <div class="flex justify-between"><dt class="text-slate-500">Folder</dt><dd class="mono text-xs text-white">1340586</dd></div>
+      </dl>
+    </div>
+
+    <!-- User Fields -->
+    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+      <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">User Fields Used</h3>
+      <div class="space-y-1 text-xs">
+        <div class="flex items-center gap-2"><span class="mono text-blue-400">mlm2numSessions</span><span class="text-slate-500">&mdash; session count (decisions)</span></div>
+        <div class="flex items-center gap-2"><span class="mono text-blue-400">last_mlm2_shot_date</span><span class="text-slate-500">&mdash; last shot date (nudges)</span></div>
+        <div class="flex items-center gap-2"><span class="mono text-blue-400">mlm2_days_since_last_session</span><span class="text-slate-500">&mdash; dormancy (exit)</span></div>
+        <div class="flex items-center gap-2"><span class="mono text-blue-400">SIM_RAPSODO_COURSES</span><span class="text-slate-500">&mdash; courses sessions (W6)</span></div>
+        <div class="flex items-center gap-2"><span class="mono text-blue-400">SIM_RANGE</span><span class="text-slate-500">&mdash; range sessions (W7)</span></div>
+        <div class="flex items-center gap-2"><span class="mono text-blue-400">total_shots</span><span class="text-slate-500">&mdash; personalization</span></div>
+        <div class="flex items-center gap-2"><span class="mono text-blue-400">mlm2_session_count</span><span class="text-slate-500">&mdash; personalization</span></div>
+      </div>
+    </div>
+
+    <!-- Events -->
+    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+      <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Events Used</h3>
+      <div class="space-y-1 text-xs">
+        <div class="flex items-center gap-2"><span class="mono text-emerald-400">Play Session v2</span><span class="text-slate-500">&mdash; InApp #6 trigger</span></div>
+        <div class="flex items-center gap-2"><span class="mono text-emerald-400">session_start</span><span class="text-slate-500">&mdash; InApp #11, #19 trigger</span></div>
+        <div class="flex items-center gap-2"><span class="mono text-emerald-400">View Session Detail</span><span class="text-slate-500">&mdash; InApp #13 trigger</span></div>
+        <div class="flex items-center gap-2"><span class="mono text-emerald-400">View Session Insights</span><span class="text-slate-500">&mdash; Decision #14, #15</span></div>
+        <div class="flex items-center gap-2"><span class="mono text-red-400">customer.subscription.deleted</span><span class="text-slate-500">&mdash; exit trigger</span></div>
+      </div>
+    </div>
+
+    <!-- Deep Links -->
+    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+      <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Deep Links</h3>
+      <div class="space-y-1 text-xs">
+        <div><span class="mono text-blue-400">rapsodo://practice</span> <span class="text-slate-500">&mdash; Practice Mode</span></div>
+        <div><span class="mono text-blue-400">rapsodo://sessions</span> <span class="text-slate-500">&mdash; Session list</span></div>
+        <div><span class="mono text-blue-400">rapsodo://session-review/latest</span> <span class="text-slate-500">&mdash; Latest session</span></div>
+        <div><span class="mono text-blue-400">rapsodo://session-insights</span> <span class="text-slate-500">&mdash; Insights page</span></div>
+        <div><span class="mono text-blue-400">rapsodo://courses</span> <span class="text-slate-500">&mdash; Courses Mode</span></div>
+        <div><span class="mono text-blue-400">rapsodo://range</span> <span class="text-slate-500">&mdash; Range Mode</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="border-t border-slate-800 py-6 mt-16">
+  <div class="max-w-7xl mx-auto px-6 flex items-center justify-between text-xs text-slate-600">
+    <span>Weekly Practice Habit Builder &mdash; Iterable Wiring Guide</span>
+    <span>Generated Feb 26, 2026 &bull; 24 touchpoints &bull; 8 weeks</span>
+  </div>
+</footer>
+
+<script>
+// Collapsible sections
+function toggleSection(id) {
+  const content = document.getElementById(id);
+  const chevron = document.getElementById(id + '-chevron');
+  if (content.classList.contains('collapsed')) {
+    content.classList.remove('collapsed');
+    content.style.maxHeight = content.scrollHeight + 'px';
+    if (chevron) chevron.style.transform = 'rotate(0deg)';
+  } else {
+    content.classList.add('collapsed');
+    if (chevron) chevron.style.transform = 'rotate(-90deg)';
+  }
+}
+
+// Checkbox toggling
+function toggleCheck(item) {
+  const box = item.querySelector('.check-box');
+  box.classList.toggle('checked');
+  item.classList.toggle('checked-item');
+
+  // Save state
+  const checkboxes = document.querySelectorAll('.check-box');
+  const states = Array.from(checkboxes).map(cb => cb.classList.contains('checked'));
+  try { localStorage.setItem('wiring-guide-checks', JSON.stringify(states)); } catch(e) {}
+
+  // Update counter
+  updateCounter();
+}
+
+function updateCounter() {
+  const total = document.querySelectorAll('.check-box').length;
+  const checked = document.querySelectorAll('.check-box.checked').length;
+  const counter = document.getElementById('check-counter');
+  if (counter) counter.textContent = checked + ' / ' + total;
+}
+
+// Restore checkbox state on load
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('wiring-guide-checks'));
+    if (saved) {
+      const checkboxes = document.querySelectorAll('.check-box');
+      saved.forEach(function(state, i) {
+        if (state && checkboxes[i]) {
+          checkboxes[i].classList.add('checked');
+          checkboxes[i].closest('.checklist-item').classList.add('checked-item');
+        }
+      });
+    }
+  } catch(e) {}
+  updateCounter();
+});
+</script>
+
+</body>
+</html>

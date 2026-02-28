@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rapsodo Lifecycle Messaging &mdash; Best Practices Guide</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: { rapsodo: '#ce2029' }
+        }
+      }
+    }
+  </script>
+  <style>
+    html { font-family: 'Inter', system-ui, sans-serif; }
+    body { background: #020617; }
+
+    /* Sidebar active link */
+    .toc-link { transition: color 0.15s, border-color 0.15s; }
+    .toc-link.active { color: #f8fafc; border-left-color: #ce2029; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+    /* Stat card glow */
+    .stat-card { transition: box-shadow 0.2s; }
+    .stat-card:hover { box-shadow: 0 0 24px rgba(206,32,41,0.12); }
+
+    /* Pattern card */
+    .pattern-step { position: relative; padding-left: 2rem; }
+    .pattern-step::before {
+      content: '';
+      position: absolute;
+      left: 0.45rem;
+      top: 1.75rem;
+      bottom: -1rem;
+      width: 2px;
+      background: #334155;
+    }
+    .pattern-step:last-child::before { display: none; }
+    .pattern-step .step-dot {
+      position: absolute;
+      left: 0;
+      top: 0.35rem;
+      width: 1rem;
+      height: 1rem;
+      border-radius: 50%;
+      border: 2px solid #ce2029;
+      background: #0f172a;
+    }
+
+    /* Print */
+    @media print {
+      nav { display: none !important; }
+      main { margin-left: 0 !important; }
+    }
+  </style>
+</head>
+<body class="text-slate-300 antialiased">
+
+  <!-- ───── SIDEBAR ───── -->
+  <nav id="sidebar" class="fixed top-0 left-0 h-screen w-64 bg-slate-950 border-r border-slate-800 overflow-y-auto z-50 hidden lg:block">
+    <div class="px-5 pt-8 pb-4">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="inline-block w-2 h-2 rounded-full bg-rapsodo"></span>
+        <span class="text-xs font-semibold uppercase tracking-widest text-slate-500">Rapsodo CS</span>
+      </div>
+      <h2 class="text-lg font-bold text-white leading-tight">Best Practices</h2>
+      <p class="text-xs text-slate-500 mt-1">Lifecycle Messaging Guide</p>
+    </div>
+
+    <ul class="px-3 pb-8 space-y-0.5 text-sm">
+      <li><a href="#journey-design" class="toc-link block px-3 py-2 border-l-2 border-transparent text-slate-400 hover:text-white rounded-r">1. Journey Design</a></li>
+      <li class="ml-3"><a href="#lifecycle-stages" class="toc-link block px-3 py-1.5 border-l-2 border-transparent text-slate-500 hover:text-slate-300 text-xs rounded-r">Lifecycle Stages</a></li>
+      <li class="ml-3"><a href="#triggers-exits" class="toc-link block px-3 py-1.5 border-l-2 border-transparent text-slate-500 hover:text-slate-300 text-xs rounded-r">Triggers &amp; Exits</a></li>
+      <li class="ml-3"><a href="#cadence-rules" class="toc-link block px-3 py-1.5 border-l-2 border-transparent text-slate-500 hover:text-slate-300 text-xs rounded-r">Cadence Rules</a></li>
+
+      <li class="mt-3"><a href="#email" class="toc-link block px-3 py-2 border-l-2 border-transparent text-slate-400 hover:text-white rounded-r">2. Email</a></li>
+      <li class="ml-3"><a href="#email-subject" class="toc-link block px-3 py-1.5 border-l-2 border-transparent text-slate-500 hover:text-slate-300 text-xs rounded-r">Subject Lines</a></li>
+      <li class="ml-3"><a href="#email-copy" class="toc-link block px-3 py-1.5 border-l-2 border-transparent text-slate-500 hover:text-slate-300 text-xs rounded-r">Copy</a></li>
+      <li class="ml-3"><a href="#email-design" class="toc-link block px-3 py-1.5 border-l-2 border-transparent text-slate-500 hover:text-slate-300 text-xs rounded-r">Design</a></li>
+
+      <li class="mt-3"><a href="#push" class="toc-link block px-3 py-2 border-l-2 border-transparent text-slate-400 hover:text-white rounded-r">3. Push Notifications</a></li>
+      <li class="ml-3"><a href="#push-when" class="toc-link block px-3 py-1.5 border-l-2 border-transparent text-slate-500 hover:text-slate-300 text-xs rounded-r">When to Push</a></li>
+      <li class="ml-3"><a href="#push-fatigue" class="toc-link block px-3 py-1.5 border-l-2 border-transparent text-slate-500 hover:text-slate-300 text-xs rounded-r">Fatigue &amp; Cadence</a></li>
+
+      <li class="mt-3"><a href="#inapp" class="toc-link block px-3 py-2 border-l-2 border-transparent text-slate-400 hover:text-white rounded-r">4. In-App Messages</a></li>
+      <li class="ml-3"><a href="#inapp-formats" class="toc-link block px-3 py-1.5 border-l-2 border-transparent text-slate-500 hover:text-slate-300 text-xs rounded-r">Format Selection</a></li>
+      <li class="ml-3"><a href="#inapp-timing" class="toc-link block px-3 py-1.5 border-l-2 border-transparent text-slate-500 hover:text-slate-300 text-xs rounded-r">Timing &amp; Triggers</a></li>
+      <li class="ml-3"><a href="#inapp-discovery" class="toc-link block px-3 py-1.5 border-l-2 border-transparent text-slate-500 hover:text-slate-300 text-xs rounded-r">Feature Discovery</a></li>
+
+      <li class="mt-3"><a href="#orchestration" class="toc-link block px-3 py-2 border-l-2 border-transparent text-slate-400 hover:text-white rounded-r">5. Channel Orchestration</a></li>
+      <li class="ml-3"><a href="#channel-loop" class="toc-link block px-3 py-1.5 border-l-2 border-transparent text-slate-500 hover:text-slate-300 text-xs rounded-r">The Loop</a></li>
+      <li class="ml-3"><a href="#frequency-caps" class="toc-link block px-3 py-1.5 border-l-2 border-transparent text-slate-500 hover:text-slate-300 text-xs rounded-r">Frequency Caps</a></li>
+
+      <li class="mt-4 pt-3 border-t border-slate-800"><a href="#sources" class="toc-link block px-3 py-2 border-l-2 border-transparent text-slate-500 hover:text-slate-300 text-xs rounded-r">Sources</a></li>
+    </ul>
+  </nav>
+
+  <!-- ───── MOBILE HEADER ───── -->
+  <div class="lg:hidden fixed top-0 left-0 right-0 z-50 bg-slate-950/95 backdrop-blur border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+    <div>
+      <span class="text-xs font-semibold uppercase tracking-widest text-slate-500">Rapsodo CS</span>
+      <span class="text-sm font-bold text-white ml-2">Best Practices</span>
+    </div>
+    <button onclick="document.getElementById('sidebar').classList.toggle('hidden')" class="text-slate-400 hover:text-white p-1">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+
+  <!-- ───── MAIN CONTENT ───── -->
+  <main class="lg:ml-64 min-h-screen">
+    <div class="max-w-4xl mx-auto px-6 py-12 lg:py-16">
+
+      <!-- Header -->
+      <header class="mb-16">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-rapsodo/10 text-rapsodo border border-rapsodo/20">MLM2PRO</span>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700">Iterable</span>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700">45-Day Playbook</span>
+        </div>
+        <h1 class="text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight mb-4">Lifecycle Messaging<br/>Best Practices</h1>
+        <p class="text-lg text-slate-400 max-w-2xl">A reference guide for designing effective customer journeys, emails, push notifications, and in-app messages for the Rapsodo MLM2PRO golf launch monitor.</p>
+        <div class="mt-6 flex items-center gap-4 text-xs text-slate-500">
+          <span>For: <span class="text-slate-300">Megan</span> (Lifecycle Strategist) &amp; <span class="text-slate-300">Joe</span> (Director, CS)</span>
+          <span class="text-slate-700">|</span>
+          <span>Updated: Feb 2026</span>
+        </div>
+      </header>
+
+
+      <!-- ════════════════════════════════════════════════════════════════ -->
+      <!-- SECTION 1: JOURNEY DESIGN -->
+      <!-- ════════════════════════════════════════════════════════════════ -->
+      <section id="journey-design" class="mb-20">
+        <div class="flex items-center gap-3 mb-8">
+          <span class="flex-none w-10 h-10 rounded-lg bg-rapsodo/10 border border-rapsodo/20 flex items-center justify-center text-rapsodo font-bold text-sm">1</span>
+          <h2 class="text-2xl font-bold text-white">Journey Design Best Practices</h2>
+        </div>
+
+        <!-- Lifecycle Stages -->
+        <div id="lifecycle-stages" class="mb-10">
+          <h3 class="text-lg font-semibold text-white mb-4">Lifecycle Stages</h3>
+          <p class="text-sm text-slate-400 mb-5">Start with clear audience segmentation. Every user sits in one of these stages. Build one journey per transition&mdash;never overload a single journey with multiple goals.</p>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-3">
+              <div class="w-2 h-2 rounded-full bg-slate-500 mb-2"></div>
+              <p class="text-xs font-semibold text-white">Pre-Activation</p>
+              <p class="text-[11px] text-slate-500 mt-1">Registered, no session yet</p>
+            </div>
+            <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-3">
+              <div class="w-2 h-2 rounded-full bg-yellow-500 mb-2"></div>
+              <p class="text-xs font-semibold text-white">Activated</p>
+              <p class="text-[11px] text-slate-500 mt-1">First session completed</p>
+            </div>
+            <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-3">
+              <div class="w-2 h-2 rounded-full bg-blue-400 mb-2"></div>
+              <p class="text-xs font-semibold text-white">Early Engagement</p>
+              <p class="text-[11px] text-slate-500 mt-1">2&ndash;5 sessions, exploring</p>
+            </div>
+            <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-3">
+              <div class="w-2 h-2 rounded-full bg-emerald-400 mb-2"></div>
+              <p class="text-xs font-semibold text-white">Progressing</p>
+              <p class="text-[11px] text-slate-500 mt-1">Multi-feature, regular usage</p>
+            </div>
+            <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-3">
+              <div class="w-2 h-2 rounded-full bg-green-500 mb-2"></div>
+              <p class="text-xs font-semibold text-white">Loyal</p>
+              <p class="text-[11px] text-slate-500 mt-1">6+ features, high retention</p>
+            </div>
+            <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-3">
+              <div class="w-2 h-2 rounded-full bg-orange-500 mb-2"></div>
+              <p class="text-xs font-semibold text-white">At-Risk</p>
+              <p class="text-[11px] text-slate-500 mt-1">Declining sessions, dormancy</p>
+            </div>
+            <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-3">
+              <div class="w-2 h-2 rounded-full bg-red-500 mb-2"></div>
+              <p class="text-xs font-semibold text-white">Churned</p>
+              <p class="text-[11px] text-slate-500 mt-1">Cancelled or 30+ days dark</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Journey Architecture -->
+        <div class="mb-10">
+          <h3 class="text-lg font-semibold text-white mb-4">Journey Architecture</h3>
+          <div class="space-y-3">
+            <div class="flex gap-3 items-start">
+              <span class="flex-none mt-0.5 w-5 h-5 rounded bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                <svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              </span>
+              <div>
+                <p class="text-sm text-slate-200 font-medium">One journey per lifecycle transition</p>
+                <p class="text-xs text-slate-500">Pre-Activation &rarr; Activated is a journey. Activated &rarr; Engaged is a separate journey. Mixing goals kills clarity and makes measurement impossible.</p>
+              </div>
+            </div>
+            <div class="flex gap-3 items-start">
+              <span class="flex-none mt-0.5 w-5 h-5 rounded bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                <svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              </span>
+              <div>
+                <p class="text-sm text-slate-200 font-medium">8&ndash;20 touchpoints for multi-week journeys</p>
+                <p class="text-xs text-slate-500">Fewer feels abandoned. More feels spammy. The 45-day playbook targets ~16 touchpoints across 7 phases.</p>
+              </div>
+            </div>
+            <div class="flex gap-3 items-start">
+              <span class="flex-none mt-0.5 w-5 h-5 rounded bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                <svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              </span>
+              <div>
+                <p class="text-sm text-slate-200 font-medium">Progressive feature introduction</p>
+                <p class="text-xs text-slate-500">Follow the natural learning curve: <span class="text-slate-300">Practice &rarr; Session Review &rarr; Session Insights &rarr; Courses &rarr; Range &rarr; Target</span>. Don't show Target Mode to someone who hasn't done a session yet.</p>
+              </div>
+            </div>
+            <div class="flex gap-3 items-start">
+              <span class="flex-none mt-0.5 w-5 h-5 rounded bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                <svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              </span>
+              <div>
+                <p class="text-sm text-slate-200 font-medium">Decision splits at key behavioral moments</p>
+                <p class="text-xs text-slate-500">Did they practice? Did they try the feature? Split the path based on the answer. Active users get in-app nudges. Dormant users get push re-engagement.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Triggers & Exits -->
+        <div id="triggers-exits" class="mb-10">
+          <h3 class="text-lg font-semibold text-white mb-4">Triggers &amp; Exit Conditions</h3>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-5">
+              <h4 class="text-sm font-semibold text-emerald-400 mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                Behavioral Triggers (use these)
+              </h4>
+              <ul class="text-xs text-slate-400 space-y-2">
+                <li class="flex gap-2"><span class="text-emerald-400/60">&bull;</span>User completes first session</li>
+                <li class="flex gap-2"><span class="text-emerald-400/60">&bull;</span>User tries a new feature mode</li>
+                <li class="flex gap-2"><span class="text-emerald-400/60">&bull;</span>No session in 3+ days (dormancy)</li>
+                <li class="flex gap-2"><span class="text-emerald-400/60">&bull;</span>User views Session Detail page</li>
+                <li class="flex gap-2"><span class="text-emerald-400/60">&bull;</span>Trial claimed / trial expiring</li>
+                <li class="flex gap-2"><span class="text-emerald-400/60">&bull;</span>Shot count milestones (100, 500, 1000)</li>
+              </ul>
+            </div>
+
+            <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-5">
+              <h4 class="text-sm font-semibold text-red-400 mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                Exit Conditions (always define these)
+              </h4>
+              <ul class="text-xs text-slate-400 space-y-2">
+                <li class="flex gap-2"><span class="text-red-400/60">&bull;</span>14+ day dormancy &rarr; move to re-engagement journey</li>
+                <li class="flex gap-2"><span class="text-red-400/60">&bull;</span>Subscription cancelled &rarr; exit immediately</li>
+                <li class="flex gap-2"><span class="text-red-400/60">&bull;</span>User unsubscribes from channel</li>
+                <li class="flex gap-2"><span class="text-red-400/60">&bull;</span>Journey goal achieved (feature adopted)</li>
+                <li class="flex gap-2"><span class="text-red-400/60">&bull;</span>User enters a higher-priority journey</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-4 rounded-lg bg-amber-500/5 border border-amber-500/20 p-4">
+            <p class="text-xs text-amber-300/90 font-medium mb-1">Entry Filter Rule</p>
+            <p class="text-xs text-slate-400">Every journey entry should check: <code class="px-1.5 py-0.5 bg-slate-800 rounded text-amber-300/80 text-[11px]">NOT in another active journey</code> to prevent message overlap. A user should never be in two engagement journeys simultaneously.</p>
+          </div>
+        </div>
+
+        <!-- Cadence Rules -->
+        <div id="cadence-rules" class="mb-6">
+          <h3 class="text-lg font-semibold text-white mb-4">Cadence Rules</h3>
+
+          <div class="rounded-lg bg-slate-900/60 border border-slate-800 overflow-hidden">
+            <table class="w-full text-xs">
+              <thead>
+                <tr class="border-b border-slate-800">
+                  <th class="text-left px-4 py-3 text-slate-500 font-medium">Channel</th>
+                  <th class="text-left px-4 py-3 text-slate-500 font-medium">Minimum Spacing</th>
+                  <th class="text-left px-4 py-3 text-slate-500 font-medium">Weekly Max</th>
+                  <th class="text-left px-4 py-3 text-slate-500 font-medium">Re-entry</th>
+                </tr>
+              </thead>
+              <tbody class="text-slate-300">
+                <tr class="border-b border-slate-800/50">
+                  <td class="px-4 py-2.5 font-medium">Email</td>
+                  <td class="px-4 py-2.5">3 days apart</td>
+                  <td class="px-4 py-2.5">3 per week</td>
+                  <td class="px-4 py-2.5 text-slate-500">Disabled for engagement</td>
+                </tr>
+                <tr class="border-b border-slate-800/50">
+                  <td class="px-4 py-2.5 font-medium">Push</td>
+                  <td class="px-4 py-2.5">7 days apart</td>
+                  <td class="px-4 py-2.5">1 per week</td>
+                  <td class="px-4 py-2.5 text-slate-500">Disabled for engagement</td>
+                </tr>
+                <tr class="border-b border-slate-800/50">
+                  <td class="px-4 py-2.5 font-medium">In-App</td>
+                  <td class="px-4 py-2.5">Event-triggered</td>
+                  <td class="px-4 py-2.5">1 per session</td>
+                  <td class="px-4 py-2.5 text-slate-500">N/A (event-based)</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-2.5 font-medium text-slate-500">Transactional</td>
+                  <td class="px-4 py-2.5 text-slate-500">As needed</td>
+                  <td class="px-4 py-2.5 text-slate-500">No cap</td>
+                  <td class="px-4 py-2.5 text-slate-500">Enabled</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mt-4 rounded-lg bg-slate-900/60 border border-slate-800 p-4">
+            <p class="text-xs font-semibold text-slate-300 mb-2">Weekly Anchor Pattern</p>
+            <div class="flex items-center gap-2 text-xs text-slate-400 flex-wrap">
+              <span class="px-2.5 py-1 rounded bg-blue-500/10 border border-blue-500/20 text-blue-300 font-medium">Email</span>
+              <span class="text-slate-600">(educate)</span>
+              <span class="text-slate-600">&rarr;</span>
+              <span class="px-2.5 py-1 rounded bg-purple-500/10 border border-purple-500/20 text-purple-300 font-medium">In-App</span>
+              <span class="text-slate-600">(catch in app)</span>
+              <span class="text-slate-600">&rarr;</span>
+              <span class="px-2.5 py-1 rounded bg-orange-500/10 border border-orange-500/20 text-orange-300 font-medium">Push</span>
+              <span class="text-slate-600">(re-engage dormant)</span>
+              <span class="text-slate-600">&rarr; repeat</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ════════════════════════════════════════════════════════════════ -->
+      <!-- SECTION 2: EMAIL -->
+      <!-- ════════════════════════════════════════════════════════════════ -->
+      <section id="email" class="mb-20">
+        <div class="flex items-center gap-3 mb-8">
+          <span class="flex-none w-10 h-10 rounded-lg bg-rapsodo/10 border border-rapsodo/20 flex items-center justify-center text-rapsodo font-bold text-sm">2</span>
+          <h2 class="text-2xl font-bold text-white">Email Best Practices</h2>
+        </div>
+
+        <!-- Subject Lines -->
+        <div id="email-subject" class="mb-10">
+          <h3 class="text-lg font-semibold text-white mb-4">Subject Lines</h3>
+
+          <div class="space-y-3">
+            <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-4">
+              <div class="flex items-center justify-between mb-3">
+                <p class="text-xs font-semibold text-slate-300">Length</p>
+                <span class="text-[11px] text-slate-500">Max 70 chars &bull; 40&ndash;50 ideal for mobile</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-2 mb-1">
+                <div class="bg-emerald-500 h-2 rounded-full" style="width:65%"></div>
+              </div>
+              <div class="flex justify-between text-[10px] text-slate-600 mt-1">
+                <span>0</span>
+                <span class="text-emerald-400">40&ndash;50 ideal</span>
+                <span>70 max</span>
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-3">
+              <div class="rounded-lg bg-emerald-500/5 border border-emerald-500/20 p-4">
+                <p class="text-xs font-semibold text-emerald-400 mb-2">Do</p>
+                <ul class="text-xs text-slate-400 space-y-1.5">
+                  <li>&bull; Lowercase, conversational tone</li>
+                  <li>&bull; Like a coach texting, not a corporation emailing</li>
+                  <li>&bull; Questions: <span class="text-slate-300">"are you leaving yards on the table?"</span></li>
+                  <li>&bull; Data hooks: <span class="text-slate-300">"you hit {{total_shots}} shots this week"</span></li>
+                  <li>&bull; Personalization sparingly ({{firstName}} works)</li>
+                </ul>
+              </div>
+              <div class="rounded-lg bg-red-500/5 border border-red-500/20 p-4">
+                <p class="text-xs font-semibold text-red-400 mb-2">Don't</p>
+                <ul class="text-xs text-slate-400 space-y-1.5">
+                  <li>&bull; No exclamation marks</li>
+                  <li>&bull; No ALL CAPS</li>
+                  <li>&bull; No clickbait</li>
+                  <li>&bull; No guilt-trip: <span class="text-slate-500 line-through">"We miss you!"</span></li>
+                  <li>&bull; Don't overuse {{firstName}} in subjects</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Email Copy -->
+        <div id="email-copy" class="mb-10">
+          <h3 class="text-lg font-semibold text-white mb-4">Copy Structure</h3>
+          <p class="text-sm text-slate-400 mb-4">2&ndash;3 short paragraphs max. Respect the reader's time. Brand voice: warm coach, not salesperson.</p>
+
+          <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-5 space-y-4">
+            <div class="flex gap-3">
+              <span class="flex-none w-6 h-6 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-[10px] text-blue-300 font-bold">1</span>
+              <div>
+                <p class="text-xs font-semibold text-slate-200">Acknowledge their situation</p>
+                <p class="text-[11px] text-slate-500">Empathy first. Meet the user where they are. Use {{firstName}} once here.</p>
+                <p class="text-[11px] text-slate-400 mt-1 italic">"Hey {{firstName}}, you've been putting in the work with {{total_shots}} shots last week."</p>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <span class="flex-none w-6 h-6 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-[10px] text-blue-300 font-bold">2</span>
+              <div>
+                <p class="text-xs font-semibold text-slate-200">The insight / value / feature introduction</p>
+                <p class="text-[11px] text-slate-500">What the feature does and why it matters to them specifically.</p>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <span class="flex-none w-6 h-6 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-[10px] text-blue-300 font-bold">3</span>
+              <div>
+                <p class="text-xs font-semibold text-slate-200">The ask (soft CTA)</p>
+                <p class="text-[11px] text-slate-500">One clear action. Keep it low-friction.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 rounded-lg bg-amber-500/5 border border-amber-500/20 p-4">
+            <p class="text-xs text-amber-300/90 font-medium mb-1">Bullet Rules</p>
+            <p class="text-xs text-slate-400">Max 3 bullets. Action-oriented. Under 10 words each. Never guilt-trip: no "We miss you!" or "You're falling behind!"</p>
+          </div>
+        </div>
+
+        <!-- Email Design -->
+        <div id="email-design" class="mb-10">
+          <h3 class="text-lg font-semibold text-white mb-4">Design &amp; Layout</h3>
+
+          <div class="grid md:grid-cols-2 gap-4 mb-4">
+            <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-4 space-y-3">
+              <p class="text-xs font-semibold text-slate-300">Layout Rules</p>
+              <ul class="text-xs text-slate-400 space-y-1.5">
+                <li>&bull; <span class="text-white font-medium">80:20</span> text-to-image ratio (spam filter safe)</li>
+                <li>&bull; Mobile-first: single column layout</li>
+                <li>&bull; Table-based HTML for email client compatibility</li>
+                <li>&bull; Dark mode compatible (test <code class="text-[10px] bg-slate-800 px-1 rounded">prefers-color-scheme</code>)</li>
+              </ul>
+            </div>
+            <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-4 space-y-3">
+              <p class="text-xs font-semibold text-slate-300">CTA Button</p>
+              <ul class="text-xs text-slate-400 space-y-1.5">
+                <li>&bull; Rapsodo red <span class="inline-block w-3 h-3 rounded align-middle" style="background:#ce2029"></span> <code class="text-[10px] bg-slate-800 px-1 rounded">#ce2029</code> on white</li>
+                <li>&bull; Min <span class="text-white font-medium">44px</span> tap target</li>
+                <li>&bull; 2&ndash;4 words, action verb</li>
+                <li>&bull; <span class="text-white font-medium">One primary CTA</span> per email. Optional subtle secondary link.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-4">
+            <p class="text-xs font-semibold text-slate-300 mb-2">Additional Details</p>
+            <ul class="text-xs text-slate-400 space-y-1.5">
+              <li>&bull; <span class="text-slate-200">Preheader:</span> 2&ndash;3 words, ALL CAPS (acts as context label in inbox preview)</li>
+              <li>&bull; <span class="text-slate-200">Footer:</span> social links, unsubscribe via <code class="text-[10px] bg-slate-800 px-1 rounded">{{unsubscribeUrl}}</code></li>
+              <li>&bull; <span class="text-slate-200">{{firstName}}</span> used once (first paragraph). Don't over-personalize.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Email Benchmarks -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-white mb-4">Benchmarks</h3>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="stat-card rounded-lg bg-slate-900/60 border border-slate-800 p-4 text-center">
+              <p class="text-2xl font-bold text-white">2&ndash;3%</p>
+              <p class="text-[11px] text-slate-500 mt-1">Average Email CTR</p>
+            </div>
+            <div class="stat-card rounded-lg bg-slate-900/60 border border-slate-800 p-4 text-center">
+              <p class="text-2xl font-bold text-white">20&ndash;30%</p>
+              <p class="text-[11px] text-slate-500 mt-1">Good Open Rate (lifecycle)</p>
+            </div>
+            <div class="stat-card rounded-lg bg-slate-900/60 border border-slate-800 p-4 text-center">
+              <p class="text-2xl font-bold text-emerald-400">A/B</p>
+              <p class="text-[11px] text-slate-500 mt-1">Test subject lines always</p>
+            </div>
+          </div>
+          <p class="text-xs text-slate-500 mt-3">A/B test subject lines on every send. Even small lifts compound over weeks across thousands of users.</p>
+        </div>
+      </section>
+
+
+      <!-- ════════════════════════════════════════════════════════════════ -->
+      <!-- SECTION 3: PUSH NOTIFICATIONS -->
+      <!-- ════════════════════════════════════════════════════════════════ -->
+      <section id="push" class="mb-20">
+        <div class="flex items-center gap-3 mb-8">
+          <span class="flex-none w-10 h-10 rounded-lg bg-rapsodo/10 border border-rapsodo/20 flex items-center justify-center text-rapsodo font-bold text-sm">3</span>
+          <h2 class="text-2xl font-bold text-white">Push Notification Best Practices</h2>
+        </div>
+
+        <!-- When to Push -->
+        <div id="push-when" class="mb-10">
+          <h3 class="text-lg font-semibold text-white mb-4">When to Use Push</h3>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="rounded-lg bg-emerald-500/5 border border-emerald-500/20 p-4">
+              <p class="text-xs font-semibold text-emerald-400 mb-3">Use Push For</p>
+              <ul class="text-xs text-slate-400 space-y-2">
+                <li class="flex gap-2">
+                  <svg class="w-3.5 h-3.5 text-emerald-400 flex-none mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Dormancy re-engagement (no session in 3+ days)</span>
+                </li>
+                <li class="flex gap-2">
+                  <svg class="w-3.5 h-3.5 text-emerald-400 flex-none mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Data hooks: <span class="text-slate-300">"Your smash factor was 1.47 last session"</span></span>
+                </li>
+                <li class="flex gap-2">
+                  <svg class="w-3.5 h-3.5 text-emerald-400 flex-none mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Time-sensitive reminders (trial expiring in 2 days)</span>
+                </li>
+              </ul>
+            </div>
+            <div class="rounded-lg bg-red-500/5 border border-red-500/20 p-4">
+              <p class="text-xs font-semibold text-red-400 mb-3">Never Push</p>
+              <ul class="text-xs text-slate-400 space-y-2">
+                <li class="flex gap-2">
+                  <svg class="w-3.5 h-3.5 text-red-400 flex-none mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                  <span>Active users already practicing (use InApp)</span>
+                </li>
+                <li class="flex gap-2">
+                  <svg class="w-3.5 h-3.5 text-red-400 flex-none mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                  <span>Generic messages (<span class="line-through">"Check out our app!"</span>)</span>
+                </li>
+                <li class="flex gap-2">
+                  <svg class="w-3.5 h-3.5 text-red-400 flex-none mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                  <span>During quiet hours (9 PM &ndash; 8 AM local time)</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Push Copy -->
+        <div class="mb-10">
+          <h3 class="text-lg font-semibold text-white mb-4">Copy Guidelines</h3>
+
+          <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-5">
+            <div class="grid md:grid-cols-2 gap-6">
+              <div>
+                <p class="text-xs font-semibold text-slate-300 mb-2">Title</p>
+                <p class="text-xs text-slate-400">Max <span class="text-white font-medium">50 characters</span>. Punchy, benefit-focused.</p>
+                <div class="mt-2 bg-slate-800 rounded-lg p-3">
+                  <p class="text-xs text-slate-300 font-medium">your launch angle is trending up</p>
+                  <p class="text-[10px] text-slate-500 mt-0.5">42 chars</p>
+                </div>
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-slate-300 mb-2">Body</p>
+                <p class="text-xs text-slate-400">Max <span class="text-white font-medium">100 characters</span>. ONE sentence. Action-oriented.</p>
+                <div class="mt-2 bg-slate-800 rounded-lg p-3">
+                  <p class="text-xs text-slate-300">Tap to see how your last 50 shots compare to your best session.</p>
+                  <p class="text-[10px] text-slate-500 mt-0.5">64 chars</p>
+                </div>
+              </div>
+            </div>
+            <p class="text-xs text-slate-500 mt-4 pt-3 border-t border-slate-700">Include specific data when possible. Personalization increases engagement by 30%+. Always give a reason to tap.</p>
+          </div>
+        </div>
+
+        <!-- Fatigue -->
+        <div id="push-fatigue" class="mb-10">
+          <h3 class="text-lg font-semibold text-white mb-4">Fatigue &amp; Cadence</h3>
+
+          <div class="rounded-lg bg-red-500/5 border border-red-500/20 p-5 mb-4">
+            <p class="text-xs font-semibold text-red-400 mb-3">Fatigue Thresholds</p>
+            <div class="grid grid-cols-3 gap-4">
+              <div class="text-center">
+                <p class="text-xl font-bold text-white">1/wk</p>
+                <p class="text-[11px] text-slate-500">Max for engagement journeys</p>
+              </div>
+              <div class="text-center">
+                <p class="text-xl font-bold text-orange-400">10%</p>
+                <p class="text-[11px] text-slate-500">Disable notifications if over-messaged</p>
+              </div>
+              <div class="text-center">
+                <p class="text-xl font-bold text-red-400">6%</p>
+                <p class="text-[11px] text-slate-500">Uninstall app if fatigued</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-4">
+            <ul class="text-xs text-slate-400 space-y-2">
+              <li>&bull; 2&ndash;5 per week is the industry ceiling before fatigue sets in</li>
+              <li>&bull; Quiet hours: no sends <span class="text-white font-medium">9 PM &ndash; 8 AM</span> user local time</li>
+              <li>&bull; Quality over quantity&mdash;one good push beats five mediocre ones</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Push Benchmarks -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-white mb-4">Benchmarks</h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="stat-card rounded-lg bg-slate-900/60 border border-slate-800 p-4 text-center">
+              <p class="text-2xl font-bold text-white">8&ndash;28%</p>
+              <p class="text-[11px] text-slate-500 mt-1">Average Push CTR</p>
+            </div>
+            <div class="stat-card rounded-lg bg-slate-900/60 border border-slate-800 p-4 text-center">
+              <p class="text-2xl font-bold text-slate-300">~4.1%</p>
+              <p class="text-[11px] text-slate-500 mt-1">iOS CTR</p>
+            </div>
+            <div class="stat-card rounded-lg bg-slate-900/60 border border-slate-800 p-4 text-center">
+              <p class="text-2xl font-bold text-slate-300">~13.6%</p>
+              <p class="text-[11px] text-slate-500 mt-1">Android CTR</p>
+            </div>
+            <div class="stat-card rounded-lg bg-slate-900/60 border border-slate-800 p-4 text-center">
+              <p class="text-2xl font-bold text-emerald-400">3x</p>
+              <p class="text-[11px] text-slate-500 mt-1">Retention (push in first 90 days)</p>
+            </div>
+          </div>
+          <p class="text-xs text-slate-500 mt-3">One push in the first week: +71% retention. Push is extremely powerful when used precisely, and destructive when used carelessly.</p>
+        </div>
+      </section>
+
+
+      <!-- ════════════════════════════════════════════════════════════════ -->
+      <!-- SECTION 4: IN-APP MESSAGES -->
+      <!-- ════════════════════════════════════════════════════════════════ -->
+      <section id="inapp" class="mb-20">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="flex-none w-10 h-10 rounded-lg bg-rapsodo/10 border border-rapsodo/20 flex items-center justify-center text-rapsodo font-bold text-sm">4</span>
+          <h2 class="text-2xl font-bold text-white">In-App Message Best Practices</h2>
+        </div>
+        <p class="text-sm text-slate-400 mb-8 ml-[3.25rem]">This is the most powerful channel. <span class="text-white font-semibold">25&ndash;40% interaction rate.</span></p>
+
+        <!-- Format Selection -->
+        <div id="inapp-formats" class="mb-10">
+          <h3 class="text-lg font-semibold text-white mb-4">Format Selection</h3>
+
+          <div class="space-y-3">
+            <!-- Modal -->
+            <div class="rounded-lg bg-slate-900/60 border border-purple-500/20 p-5">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/10 border border-purple-500/20 text-purple-300 uppercase tracking-wider">Modal</span>
+                  <span class="text-xs text-slate-500">~35% interaction rate</span>
+                </div>
+                <span class="text-xs font-semibold text-purple-300">Primary Format</span>
+              </div>
+              <p class="text-xs text-slate-400 mb-2">Feature discovery, important announcements, actions requiring a decision.</p>
+              <p class="text-xs text-slate-500">Use cases: Post-session "check out Session Review" prompts. Feature adoption nudges when user hasn't tried a mode. Decision moments.</p>
+            </div>
+
+            <!-- Banner -->
+            <div class="rounded-lg bg-slate-900/60 border border-blue-500/20 p-5">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 border border-blue-500/20 text-blue-300 uppercase tracking-wider">Banner</span>
+                  <span class="text-xs text-slate-500">~12.5% interaction rate</span>
+                </div>
+                <span class="text-xs font-semibold text-blue-300">Subtle / Non-blocking</span>
+              </div>
+              <p class="text-xs text-slate-400 mb-2">Subtle tips, pre-session focus suggestions, non-blocking info.</p>
+              <p class="text-xs text-slate-500">Use cases: "Today's focus: launch angles" before a session. Quick tips. Less intrusive&mdash;doesn't stop the user's flow.</p>
+            </div>
+
+            <!-- Fullscreen -->
+            <div class="rounded-lg bg-slate-900/60 border border-amber-500/20 p-5">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 border border-amber-500/20 text-amber-300 uppercase tracking-wider">Fullscreen</span>
+                  <span class="text-xs text-slate-500">Use rarely</span>
+                </div>
+                <span class="text-xs font-semibold text-amber-300">Milestones Only</span>
+              </div>
+              <p class="text-xs text-slate-400">Major milestones only: 8-week journey completion, first 100 sessions, subscription renewal celebration. Reserve for moments that deserve celebration.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- InApp Copy -->
+        <div class="mb-10">
+          <h3 class="text-lg font-semibold text-white mb-4">Copy Guidelines</h3>
+
+          <div class="rounded-lg bg-slate-900/60 border border-slate-800 overflow-hidden">
+            <table class="w-full text-xs">
+              <thead>
+                <tr class="border-b border-slate-800">
+                  <th class="text-left px-4 py-3 text-slate-500 font-medium">Element</th>
+                  <th class="text-left px-4 py-3 text-slate-500 font-medium">Constraint</th>
+                  <th class="text-left px-4 py-3 text-slate-500 font-medium">Notes</th>
+                </tr>
+              </thead>
+              <tbody class="text-slate-300">
+                <tr class="border-b border-slate-800/50">
+                  <td class="px-4 py-2.5 font-medium">Title</td>
+                  <td class="px-4 py-2.5">1&ndash;2 lines, under 40 chars</td>
+                  <td class="px-4 py-2.5 text-slate-500">Benefit-focused</td>
+                </tr>
+                <tr class="border-b border-slate-800/50">
+                  <td class="px-4 py-2.5 font-medium">Body</td>
+                  <td class="px-4 py-2.5">1&ndash;2 sentences, under 100 chars</td>
+                  <td class="px-4 py-2.5 text-slate-500">After 3 lines users disengage</td>
+                </tr>
+                <tr class="border-b border-slate-800/50">
+                  <td class="px-4 py-2.5 font-medium">CTA Button</td>
+                  <td class="px-4 py-2.5">1&ndash;3 words, UPPERCASE</td>
+                  <td class="px-4 py-2.5 text-slate-500">Action verb, one primary CTA only</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-2.5 font-medium">Dismiss</td>
+                  <td class="px-4 py-2.5">"Not now" or X button</td>
+                  <td class="px-4 py-2.5 text-slate-500">Always include. Users who can't dismiss feel trapped.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mt-4 rounded-lg bg-emerald-500/5 border border-emerald-500/20 p-4">
+            <p class="text-xs font-medium text-emerald-400 mb-1">Personalization Wins</p>
+            <p class="text-xs text-slate-400">Use session data, shot counts, feature usage. <span class="text-white">"You hit {{total_shots}} shots&mdash;here's your breakdown"</span> >>> <span class="text-slate-500">"Check out this feature"</span></p>
+          </div>
+        </div>
+
+        <!-- Timing & Triggers -->
+        <div id="inapp-timing" class="mb-10">
+          <h3 class="text-lg font-semibold text-white mb-4">Timing &amp; Triggers</h3>
+
+          <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-5 space-y-3 mb-4">
+            <div class="flex gap-3 items-start">
+              <span class="flex-none mt-0.5 w-5 h-5 rounded bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                <svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              </span>
+              <div>
+                <p class="text-xs text-slate-200 font-medium">ALWAYS triggered by behavioral events, never calendar schedule</p>
+              </div>
+            </div>
+            <div class="flex gap-3 items-start">
+              <span class="flex-none mt-0.5 w-5 h-5 rounded bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                <svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              </span>
+              <div>
+                <p class="text-xs text-slate-200 font-medium">Post-session completion = highest intent moment</p>
+                <p class="text-[11px] text-slate-500">Play Session v2 end event. Perfect for feature discovery modals.</p>
+              </div>
+            </div>
+            <div class="flex gap-3 items-start">
+              <span class="flex-none mt-0.5 w-5 h-5 rounded bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                <svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              </span>
+              <div>
+                <p class="text-xs text-slate-200 font-medium">Pre-session start = good for focus suggestions</p>
+                <p class="text-[11px] text-slate-500">Use banner format, not modal. Don't interrupt the intent to practice.</p>
+              </div>
+            </div>
+            <div class="flex gap-3 items-start">
+              <span class="flex-none mt-0.5 w-5 h-5 rounded bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                <svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              </span>
+              <div>
+                <p class="text-xs text-slate-200 font-medium">On View Session Detail = natural moment for Session Insights</p>
+                <p class="text-[11px] text-slate-500">They're already reviewing data. Low-friction context.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="rounded-lg bg-red-500/5 border border-red-500/20 p-4">
+              <p class="text-xs font-semibold text-red-400 mb-2">Never</p>
+              <ul class="text-xs text-slate-400 space-y-1.5">
+                <li>&bull; NEVER interrupt mid-session</li>
+                <li>&bull; Wait for <code class="text-[10px] bg-slate-800 px-1 rounded">session_end</code> or <code class="text-[10px] bg-slate-800 px-1 rounded">session_start</code></li>
+              </ul>
+            </div>
+            <div class="rounded-lg bg-emerald-500/5 border border-emerald-500/20 p-4">
+              <p class="text-xs font-semibold text-emerald-400 mb-2">Pairing Rules</p>
+              <ul class="text-xs text-slate-400 space-y-1.5">
+                <li>&bull; InApp + email same day = fine (different contexts)</li>
+                <li>&bull; InApp + push same day = avoid</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Design -->
+        <div class="mb-10">
+          <h3 class="text-lg font-semibold text-white mb-4">Design Specs</h3>
+          <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-5">
+            <div class="grid md:grid-cols-2 gap-6">
+              <div>
+                <p class="text-xs font-semibold text-slate-300 mb-2">Visual</p>
+                <ul class="text-xs text-slate-400 space-y-1.5">
+                  <li>&bull; One clear action per message</li>
+                  <li>&bull; Rapsodo red <span class="inline-block w-3 h-3 rounded align-middle" style="background:#ce2029"></span> <code class="text-[10px] bg-slate-800 px-1 rounded">#ce2029</code> for CTA buttons</li>
+                  <li>&bull; Min 44px touch area for buttons</li>
+                  <li>&bull; High contrast between button and background</li>
+                  <li>&bull; Brand-consistent with the Rapsodo app</li>
+                </ul>
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-slate-300 mb-2">Technical</p>
+                <ul class="text-xs text-slate-400 space-y-1.5">
+                  <li>&bull; Clean HTML, all styles inline</li>
+                  <li>&bull; Iterable Side-by-Side editor compatible</li>
+                  <li>&bull; Support Handlebars merge tags: <code class="text-[10px] bg-slate-800 px-1 rounded">{{firstName}}</code>, <code class="text-[10px] bg-slate-800 px-1 rounded">{{total_shots}}</code>, etc.</li>
+                  <li>&bull; Images: PNG/JPEG/GIF, max 5MB</li>
+                  <li>&bull; Recommended under 500KB for images</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feature Discovery Pattern -->
+        <div id="inapp-discovery" class="mb-10">
+          <h3 class="text-lg font-semibold text-white mb-4">Feature Discovery Pattern</h3>
+          <p class="text-sm text-slate-400 mb-4">For each new feature introduction, follow this three-channel pattern:</p>
+
+          <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-6">
+            <div class="space-y-5">
+              <div class="pattern-step">
+                <div class="step-dot"></div>
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 border border-blue-500/20 text-blue-300 uppercase tracking-wider">Email</span>
+                    <span class="text-xs text-slate-500">Day N</span>
+                  </div>
+                  <p class="text-xs text-slate-300">Explain what the feature is and why it matters.</p>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Educate. Set expectation. Give context before they see the feature.</p>
+                </div>
+              </div>
+
+              <div class="pattern-step">
+                <div class="step-dot"></div>
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/10 border border-purple-500/20 text-purple-300 uppercase tracking-wider">In-App</span>
+                    <span class="text-xs text-slate-500">Event-triggered (post-session)</span>
+                  </div>
+                  <p class="text-xs text-slate-300">"You just practiced&mdash;tap to see your session breakdown"</p>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Catches them at peak intent. Modal format. Highest conversion moment.</p>
+                </div>
+              </div>
+
+              <div class="pattern-step">
+                <div class="step-dot"></div>
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-500/10 border border-orange-500/20 text-orange-300 uppercase tracking-wider">Push</span>
+                    <span class="text-xs text-slate-500">Day N+3&ndash;5 (only if dormant)</span>
+                  </div>
+                  <p class="text-xs text-slate-300">"Have you tried Session Review?"</p>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Only fires for users who haven't tried the feature. Re-engagement, not redundancy.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- InApp Benchmarks -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-white mb-4">Benchmarks</h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="stat-card rounded-lg bg-slate-900/60 border border-slate-800 p-4 text-center">
+              <p class="text-2xl font-bold text-white">~35%</p>
+              <p class="text-[11px] text-slate-500 mt-1">Modal Interaction Rate</p>
+            </div>
+            <div class="stat-card rounded-lg bg-slate-900/60 border border-slate-800 p-4 text-center">
+              <p class="text-2xl font-bold text-slate-300">~12.5%</p>
+              <p class="text-[11px] text-slate-500 mt-1">Banner Interaction Rate</p>
+            </div>
+            <div class="stat-card rounded-lg bg-slate-900/60 border border-slate-800 p-4 text-center">
+              <p class="text-2xl font-bold text-emerald-400">8x</p>
+              <p class="text-[11px] text-slate-500 mt-1">vs Out-of-App Channels</p>
+            </div>
+            <div class="stat-card rounded-lg bg-slate-900/60 border border-slate-800 p-4 text-center">
+              <p class="text-2xl font-bold text-emerald-400">30%</p>
+              <p class="text-[11px] text-slate-500 mt-1">Conversion Lift (targeted)</p>
+            </div>
+          </div>
+          <p class="text-xs text-slate-500 mt-3">Contextual messages (triggered by behavior) outperform scheduled messages by 3&ndash;5x. Behavior-triggered in-app is the single highest-ROI channel available.</p>
+        </div>
+      </section>
+
+
+      <!-- ════════════════════════════════════════════════════════════════ -->
+      <!-- SECTION 5: CHANNEL ORCHESTRATION -->
+      <!-- ════════════════════════════════════════════════════════════════ -->
+      <section id="orchestration" class="mb-20">
+        <div class="flex items-center gap-3 mb-8">
+          <span class="flex-none w-10 h-10 rounded-lg bg-rapsodo/10 border border-rapsodo/20 flex items-center justify-center text-rapsodo font-bold text-sm">5</span>
+          <h2 class="text-2xl font-bold text-white">Channel Orchestration</h2>
+        </div>
+
+        <!-- Channel Ratio -->
+        <div class="mb-10">
+          <h3 class="text-lg font-semibold text-white mb-4">Channel Mix Target</h3>
+
+          <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-5">
+            <div class="flex gap-1 h-8 rounded-lg overflow-hidden mb-4">
+              <div class="bg-blue-500/70 flex items-center justify-center" style="width:40%">
+                <span class="text-[10px] font-bold text-white">EMAIL 40%</span>
+              </div>
+              <div class="bg-purple-500/70 flex items-center justify-center" style="width:35%">
+                <span class="text-[10px] font-bold text-white">IN-APP 35%</span>
+              </div>
+              <div class="bg-orange-500/70 flex items-center justify-center" style="width:25%">
+                <span class="text-[10px] font-bold text-white">PUSH 25%</span>
+              </div>
+            </div>
+            <p class="text-xs text-slate-500">Target ratio for engagement journeys. No SMS&mdash;not set up for Rapsodo.</p>
+          </div>
+        </div>
+
+        <!-- The Loop -->
+        <div id="channel-loop" class="mb-10">
+          <h3 class="text-lg font-semibold text-white mb-4">The Loop</h3>
+
+          <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-6">
+            <div class="flex items-center justify-center gap-4 flex-wrap mb-6">
+              <div class="text-center">
+                <div class="w-20 h-20 rounded-full bg-blue-500/10 border-2 border-blue-500/30 flex items-center justify-center mx-auto mb-2">
+                  <div>
+                    <p class="text-xs font-bold text-blue-300">Email</p>
+                    <p class="text-[10px] text-blue-400/60">educate</p>
+                  </div>
+                </div>
+              </div>
+              <svg class="w-6 h-6 text-slate-600 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+              <div class="text-center">
+                <div class="w-20 h-20 rounded-full bg-purple-500/10 border-2 border-purple-500/30 flex items-center justify-center mx-auto mb-2">
+                  <div>
+                    <p class="text-xs font-bold text-purple-300">In-App</p>
+                    <p class="text-[10px] text-purple-400/60">catch</p>
+                  </div>
+                </div>
+              </div>
+              <svg class="w-6 h-6 text-slate-600 flex-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+              <div class="text-center">
+                <div class="w-20 h-20 rounded-full bg-orange-500/10 border-2 border-orange-500/30 flex items-center justify-center mx-auto mb-2">
+                  <div>
+                    <p class="text-xs font-bold text-orange-300">Push</p>
+                    <p class="text-[10px] text-orange-400/60">re-engage</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <p class="text-xs text-slate-400 text-center">Email educates the user on the feature or concept. In-App catches them while they're already in the app. Push re-engages dormant users who went silent. Then repeat with the next feature.</p>
+          </div>
+        </div>
+
+        <!-- Rules -->
+        <div class="mb-10">
+          <h3 class="text-lg font-semibold text-white mb-4">Orchestration Rules</h3>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="rounded-lg bg-red-500/5 border border-red-500/20 p-4">
+              <p class="text-xs font-semibold text-red-400 mb-2">Never</p>
+              <p class="text-xs text-slate-400">Email + push same day. These are both out-of-app interruptions. Stacking them trains users to mute you.</p>
+            </div>
+            <div class="rounded-lg bg-emerald-500/5 border border-emerald-500/20 p-4">
+              <p class="text-xs font-semibold text-emerald-400 mb-2">OK</p>
+              <p class="text-xs text-slate-400">Email + in-app same day. Different contexts (inbox vs. in-product). Users don't perceive this as duplication.</p>
+            </div>
+          </div>
+
+          <div class="mt-4 rounded-lg bg-slate-900/60 border border-slate-800 p-4">
+            <p class="text-xs font-semibold text-slate-300 mb-2">Decision Split Pattern</p>
+            <div class="flex items-center gap-3 text-xs text-slate-400 flex-wrap">
+              <span class="px-2.5 py-1 rounded bg-slate-800 text-slate-300 font-medium">Behavioral check</span>
+              <span class="text-slate-600">&rarr;</span>
+              <span class="text-slate-400">Active users &rarr;</span>
+              <span class="px-2.5 py-1 rounded bg-purple-500/10 border border-purple-500/20 text-purple-300 font-medium">InApp feature prompts</span>
+            </div>
+            <div class="flex items-center gap-3 text-xs text-slate-400 mt-2 flex-wrap">
+              <span class="px-2.5 py-1 rounded bg-slate-800 text-transparent font-medium">Behavioral check</span>
+              <span class="text-slate-600">&rarr;</span>
+              <span class="text-slate-400">Dormant users &rarr;</span>
+              <span class="px-2.5 py-1 rounded bg-orange-500/10 border border-orange-500/20 text-orange-300 font-medium">Push re-engagement</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Frequency Caps -->
+        <div id="frequency-caps" class="mb-10">
+          <h3 class="text-lg font-semibold text-white mb-4">Frequency Caps (Across All Journeys)</h3>
+
+          <div class="rounded-lg bg-slate-900/60 border border-slate-800 overflow-hidden">
+            <table class="w-full text-xs">
+              <thead>
+                <tr class="border-b border-slate-800">
+                  <th class="text-left px-4 py-3 text-slate-500 font-medium">Channel</th>
+                  <th class="text-left px-4 py-3 text-slate-500 font-medium">Cap</th>
+                  <th class="text-left px-4 py-3 text-slate-500 font-medium">Scope</th>
+                </tr>
+              </thead>
+              <tbody class="text-slate-300">
+                <tr class="border-b border-slate-800/50">
+                  <td class="px-4 py-2.5 font-medium">Email</td>
+                  <td class="px-4 py-2.5">Max 3/week</td>
+                  <td class="px-4 py-2.5 text-slate-500">Across all active journeys combined</td>
+                </tr>
+                <tr class="border-b border-slate-800/50">
+                  <td class="px-4 py-2.5 font-medium">Push</td>
+                  <td class="px-4 py-2.5">Max 2/week</td>
+                  <td class="px-4 py-2.5 text-slate-500">Across all active journeys combined</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-2.5 font-medium">In-App</td>
+                  <td class="px-4 py-2.5">Max 1/session</td>
+                  <td class="px-4 py-2.5 text-slate-500">Per app session (not per day)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- A/B Testing -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-white mb-4">A/B Testing</h3>
+          <div class="rounded-lg bg-slate-900/60 border border-slate-800 p-4">
+            <ul class="text-xs text-slate-400 space-y-2">
+              <li>&bull; <span class="text-slate-200">Subject lines:</span> Test on every email send. Compounding effect over weeks.</li>
+              <li>&bull; <span class="text-slate-200">Push copy:</span> Test data-driven messages vs. generic. Measure CTR difference.</li>
+              <li>&bull; <span class="text-slate-200">InApp format:</span> Test modal vs. banner for the same message. Measure interaction rate + downstream conversion.</li>
+              <li>&bull; Even <span class="text-white font-medium">5% lifts compound</span> across thousands of users and weeks of the journey.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ════════════════════════════════════════════════════════════════ -->
+      <!-- SOURCES -->
+      <!-- ════════════════════════════════════════════════════════════════ -->
+      <section id="sources" class="mb-16 pt-8 border-t border-slate-800">
+        <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Data Sources</h3>
+        <ul class="text-xs text-slate-500 space-y-2">
+          <li>&bull; Pushwoosh &mdash; Push Notification Benchmarks 2025</li>
+          <li>&bull; MobiLoud &mdash; Push Notification Statistics 2025</li>
+          <li>&bull; Airship &mdash; Mobile App Push Benchmarks 2025</li>
+          <li>&bull; Business of Apps &mdash; In-App Messaging Guide</li>
+          <li>&bull; Braze &mdash; Modal In-App Message Specs</li>
+          <li>&bull; Iterable &mdash; Frequency Optimization</li>
+          <li>&bull; Reteno &mdash; In-App Messaging Best Practices</li>
+          <li>&bull; Plotline &mdash; In-App Messaging Guide for B2C Apps 2025</li>
+        </ul>
+      </section>
+
+      <!-- Footer -->
+      <footer class="text-center text-xs text-slate-600 pb-8">
+        <p>Rapsodo Customer Success &mdash; Lifecycle Messaging Best Practices</p>
+        <p class="mt-1">Built for the 45-Day Trial Conversion Playbook &bull; Iterable Journey Builder</p>
+      </footer>
+
+    </div>
+  </main>
+
+  <!-- ───── SCROLL SPY ───── -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const links = document.querySelectorAll('.toc-link');
+      const sections = [];
+
+      links.forEach(link => {
+        const id = link.getAttribute('href')?.replace('#', '');
+        if (id) {
+          const el = document.getElementById(id);
+          if (el) sections.push({ id, el, link });
+        }
+      });
+
+      function updateActive() {
+        let current = sections[0];
+        const scrollY = window.scrollY + 120;
+
+        for (const s of sections) {
+          if (s.el.offsetTop <= scrollY) current = s;
+        }
+
+        links.forEach(l => l.classList.remove('active'));
+        if (current) current.link.classList.add('active');
+      }
+
+      window.addEventListener('scroll', updateActive, { passive: true });
+      updateActive();
+    });
+  </script>
+
+</body>
+</html>
